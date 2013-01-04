@@ -267,7 +267,12 @@ func Build(ctx Context, config Config) {
 		return
 	}
 
-	if inList("productclean", config.Arguments()) {
+	if inList("targetclean", config.Arguments()) ||
+		inList("novo", config.Arguments()) {
+		targetClean(ctx, config, what)
+		ctx.Println("Deleted target directories.")
+		return
+	} else if inList("productclean", config.Arguments()) {
 		productClean(ctx, config, what)
 		ctx.Println("Deleted product directories.")
 		return
