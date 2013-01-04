@@ -297,6 +297,14 @@ func Build(ctx Context, config Config) {
 		return
 	}
 
+	if inList("targetclean", config.Arguments()) ||
+		inList("target-clean", config.Arguments()) ||
+		inList("novo", config.Arguments()) {
+		targetClean(ctx, config, what)
+		ctx.Println("Deleted target directories.")
+		return
+	}
+
 	if what&RunSoong != 0 {
 		runSoong(ctx, config)
 	}
