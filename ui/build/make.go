@@ -120,6 +120,7 @@ func runMakeProductConfig(ctx Context, config Config) {
 		"TARGET_2ND_ARCH_VARIANT",
 		"TARGET_2ND_CPU_VARIANT",
 		"BUILD_ID",
+		"BENZO_VERSION",
 	}
 
 	allVars := append(append([]string{
