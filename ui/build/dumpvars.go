@@ -195,6 +195,9 @@ func runMakeProductConfig(ctx Context, config Config) {
 		"CCACHE_SLOPPINESS",
 		"CCACHE_BASEDIR",
 		"CCACHE_CPP2",
+
+		// skip abi checks
+		"SKIP_ABI_CHECKS",
 	}
 
 	allVars := append(append([]string{
