@@ -88,6 +88,12 @@ var (
 		"-Wl,--no-undefined-version",
 	}
 
+	deviceGlobalLldflags = append(ClangFilterUnknownLldflags(deviceGlobalLdflags),
+		[]string{
+			"-Wl,--pack-dyn-relocs=android",
+			"-fuse-ld=lld",
+		}...)
+
 	pollyCflags = []string{
 		"-O3",
 		"-mllvm", "-polly ",
@@ -109,6 +115,8 @@ var (
 	hostGlobalCppflags = []string{}
 
 	hostGlobalLdflags = []string{}
+
+	hostGlobalLldflags = []string{}
 
 	commonGlobalCppflags = []string{
 		"-Wsign-promo",
@@ -159,9 +167,11 @@ func init() {
 	pctx.StaticVariable("DeviceGlobalCflags", strings.Join(deviceGlobalCflags, " "))
 	pctx.StaticVariable("DeviceGlobalCppflags", strings.Join(deviceGlobalCppflags, " "))
 	pctx.StaticVariable("DeviceGlobalLdflags", strings.Join(deviceGlobalLdflags, " "))
+	pctx.StaticVariable("DeviceGlobalLldflags", strings.Join(deviceGlobalLldflags, " "))
 	pctx.StaticVariable("HostGlobalCflags", strings.Join(hostGlobalCflags, " "))
 	pctx.StaticVariable("HostGlobalCppflags", strings.Join(hostGlobalCppflags, " "))
 	pctx.StaticVariable("HostGlobalLdflags", strings.Join(hostGlobalLdflags, " "))
+	pctx.StaticVariable("HostGlobalLldflags", strings.Join(hostGlobalLldflags, " "))
 	pctx.StaticVariable("NoOverrideGlobalCflags", strings.Join(noOverrideGlobalCflags, " "))
 
 	pctx.StaticVariable("CommonGlobalCppflags", strings.Join(commonGlobalCppflags, " "))
