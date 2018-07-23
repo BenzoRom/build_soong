@@ -65,7 +65,7 @@ func main() {
 		log.Cleanup()
 	})
 
-	buildCtx := build.Context{&build.ContextImpl{
+	buildCtx := build.Context{ContextImpl: &build.ContextImpl{
 		Context:        ctx,
 		Logger:         log,
 		Tracer:         trace,

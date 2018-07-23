@@ -146,7 +146,7 @@ func (g *Module) DepsMutator(ctx android.BottomUpMutatorContext) {
 				tool = m
 			}
 			ctx.AddFarVariationDependencies([]blueprint.Variation{
-				{"arch", ctx.Config().BuildOsVariant},
+				{Mutator: "arch", Variation: ctx.Config().BuildOsVariant},
 			}, tag, tool)
 		}
 	}
