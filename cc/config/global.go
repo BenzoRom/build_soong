@@ -141,8 +141,8 @@ var (
 
 	// prebuilts/clang default settings.
 	ClangDefaultBase         = "prebuilts/clang/host"
-	ClangDefaultVersion      = "7.0"
-	ClangDefaultShortVersion = "7.0"
+	ClangDefaultVersion      = "8.0"
+	ClangDefaultShortVersion = "8.0"
 )
 
 var pctx = android.NewPackageContext("android/soong/cc/config")
@@ -206,7 +206,7 @@ func init() {
 		if override := config.(android.Config).Getenv("DRAGONTC_VERSION"); override != "" {
 			return override, nil
 		}
-		return "7.0", nil
+		return "8.0", nil
 	})
 	pctx.StaticVariable("ClangPath", "${ClangBase}/${HostPrebuiltTag}/${ClangVersion}")
 	pctx.StaticVariable("ClangBin", "${ClangPath}/bin")
@@ -215,19 +215,19 @@ func init() {
 		if override := config.(android.Config).Getenv("DRAGONTC_VERSION"); override != "" {
 			return override, nil
 		}
-		return "7.0", nil
+		return "8.0", nil
 	})
-	pctx.StaticVariable("ClangAsanLibDir", "${ClangPath}/lib64/clang/7.0.0/lib/linux")
+	pctx.StaticVariable("ClangAsanLibDir", "${ClangPath}/lib64/clang/8.0.0/lib/linux")
 	pctx.StaticVariable("LLVMGoldPlugin", "${ClangPath}/lib64/LLVMgold.so")
 	pctx.StaticVariable("PollyFlags", strings.Join(pollyCflags, " "))
 
 	// These are tied to the version of LLVM directly in external/llvm, so they might trail the host prebuilts
 	// being used for the rest of the build process.
 	pctx.SourcePathVariable("RSClangBase", "prebuilts/clang/host")
-	pctx.SourcePathVariable("RSClangVersion", "7.0")
-	pctx.SourcePathVariable("RSReleaseVersion", "7.0")
+	pctx.SourcePathVariable("RSClangVersion", "8.0")
+	pctx.SourcePathVariable("RSReleaseVersion", "8.0")
 	pctx.StaticVariable("RSLLVMPrebuiltsPath", "${RSClangBase}/${HostPrebuiltTag}/${RSClangVersion}/bin")
-	pctx.StaticVariable("RSIncludePath", "${RSClangBase}/${HostPrebuiltTag}/${RSClangVersion}/lib64/clang/7.0.0/include")
+	pctx.StaticVariable("RSIncludePath", "${RSClangBase}/${HostPrebuiltTag}/${RSClangVersion}/lib64/clang/8.0.0/include")
 
 	pctx.PrefixedExistentPathsForSourcesVariable("RsGlobalIncludes", "-I",
 		[]string{
