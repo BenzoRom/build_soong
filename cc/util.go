@@ -79,6 +79,7 @@ func flagsToBuilderFlags(in Flags) builderFlags {
 		clang:          in.Clang,
 		coverage:       in.Coverage,
 		tidy:           in.Tidy,
+		polly:          in.Polly,
 		sAbiDump:       in.SAbiDump,
 		protoRoot:      in.ProtoRoot,
 

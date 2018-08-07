@@ -80,12 +80,6 @@ func (lto *lto) flags(ctx BaseModuleContext, flags Flags) Flags {
 
 		flags.CFlags = append(flags.CFlags, ltoFlag)
 		flags.LdFlags = append(flags.LdFlags, ltoFlag)
-		if ctx.Device() {
-			// Work around bug in Clang that doesn't pass correct emulated
-			// TLS option to target. See b/72706604 or
-			// https://github.com/android-ndk/ndk/issues/498.
-			flags.LdFlags = append(flags.LdFlags, "-Wl,-plugin-opt,-emulated-tls")
-		}
 		flags.ArGoldPlugin = true
 
 		if ctx.Config().IsEnvTrue("USE_THINLTO_CACHE") && Bool(lto.Properties.Lto.Thin) {

@@ -36,6 +36,7 @@ var ClangUnknownCflags = sorted([]string{
 	"-Wno-error=maybe-uninitialized",
 	"-Wno-error=unused-but-set-parameter",
 	"-Wno-error=unused-but-set-variable",
+	"-Wno-extended-offsetof",
 	"-Wno-free-nonheap-object",
 	"-Wno-literal-suffix",
 	"-Wno-maybe-uninitialized",
@@ -120,6 +121,16 @@ func init() {
 		// http://b/36463318 Clang executes with an absolute path, so clang-provided
 		// headers are now absolute.
 		"-fdebug-prefix-map=$$PWD/=",
+
+		// Warnings from clang-8.0
+		"-Wno-error=deprecated-register",
+		"-Wno-deprecated-register",
+		"-Wno-error=sign-compare",
+		"-Wno-sign-compare",
+		"-Wno-unused-variable",
+
+		// Added for clang-9.0
+		"-Wno-extra-semi-stmt",
 	}, " "))
 
 	pctx.StaticVariable("ClangExtraCppflags", strings.Join([]string{
@@ -151,10 +162,14 @@ func init() {
 		// fixed.
 		//"-Werror=null-dereference",
 		"-Werror=return-type",
+		"-Wno-error",
 
 		// http://b/72331526 Disable -Wtautological-* until the instances detected by these
 		// new warnings are fixed.
 		"-Wno-tautological-constant-compare",
+		"-Wno-tautological-type-limit-compare",
+		"-Wno-tautological-unsigned-enum-zero-compare",
+		"-Wno-tautological-unsigned-zero-compare",
 
 		// http://b/72331524 Allow null pointer arithmetic until the instances detected by
 		// this new warning are fixed.
@@ -164,6 +179,9 @@ func init() {
 		// warning are fixed.
 		"-Wno-enum-compare",
 		"-Wno-enum-compare-switch",
+
+		// Warnings from clang-8.0
+		"-Wno-c++98-compat-extra-semi",
 	}, " "))
 }
 

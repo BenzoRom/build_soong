@@ -33,6 +33,7 @@ var (
 		"-Wno-unused",
 		"-Winit-self",
 		"-Wpointer-arith",
+		"-Wno-inconsistent-missing-override",
 
 		// Make paths in deps files relative
 		"-no-canonical-prefixes",
@@ -87,6 +88,22 @@ var (
 		"-Wl,--no-undefined-version",
 	}
 
+	pollyCflags = []string{
+		"-O3",
+		"-mllvm", "-polly ",
+		"-mllvm", "-polly-parallel", "-lgomp",
+		"-mllvm", "-polly-ast-use-context",
+		"-mllvm", "-polly-vectorizer=stripmine",
+		"-mllvm", "-polly-opt-fusion=max",
+		"-mllvm", "-polly-opt-maximize-bands=yes",
+		"-mllvm", "-polly-run-dce",
+		"-mllvm", "-polly-position=after-loopopt",
+		"-mllvm", "-polly-run-inliner",
+		"-mllvm", "-polly-detect-keep-going",
+		"-mllvm", "-polly-opt-simplify-deps=no",
+		"-mllvm", "-polly-rtc-max-arrays-per-group=40",
+	}
+
 	hostGlobalCflags = []string{}
 
 	hostGlobalCppflags = []string{}
@@ -111,13 +128,14 @@ var (
 	GccCppStdVersion          = "gnu++11"
 	ExperimentalCStdVersion   = "gnu11"
 	ExperimentalCppStdVersion = "gnu++1z"
+	Polly                     = true
 
 	NdkMaxPrebuiltVersionInt = 27
 
 	// prebuilts/clang default settings.
 	ClangDefaultBase         = "prebuilts/clang/host"
-	ClangDefaultVersion      = "clang-4691093"
-	ClangDefaultShortVersion = "6.0.2"
+	ClangDefaultVersion      = "9.0"
+	ClangDefaultShortVersion = "9.0"
 
 	// Directories with warnings from Android.bp files.
 	WarningAllowedProjects = []string{
@@ -181,13 +199,13 @@ func init() {
 
 	pctx.SourcePathVariable("ClangDefaultBase", ClangDefaultBase)
 	pctx.VariableFunc("ClangBase", func(ctx android.PackageVarContext) string {
-		if override := ctx.Config().Getenv("LLVM_PREBUILTS_BASE"); override != "" {
+		if override := ctx.Config().Getenv("DRAGONTC_VERSION"); override != "" {
 			return override
 		}
 		return "${ClangDefaultBase}"
 	})
 	pctx.VariableFunc("ClangVersion", func(ctx android.PackageVarContext) string {
-		if override := ctx.Config().Getenv("LLVM_PREBUILTS_VERSION"); override != "" {
+		if override := ctx.Config().Getenv("DRAGONTC_VERSION"); override != "" {
 			return override
 		}
 		return ClangDefaultVersion
@@ -196,7 +214,7 @@ func init() {
 	pctx.StaticVariable("ClangBin", "${ClangPath}/bin")
 
 	pctx.VariableFunc("ClangShortVersion", func(ctx android.PackageVarContext) string {
-		if override := ctx.Config().Getenv("LLVM_RELEASE_VERSION"); override != "" {
+		if override := ctx.Config().Getenv("DRAGONTC_VERSION"); override != "" {
 			return override
 		}
 		return ClangDefaultShortVersion
@@ -208,11 +226,13 @@ func init() {
 		pctx.StaticVariable("LLVMGoldPlugin", "${ClangPath}/lib64/LLVMgold.so")
 	}
 
+	pctx.StaticVariable("PollyFlags", strings.Join(pollyCflags, " "))
+
 	// These are tied to the version of LLVM directly in external/llvm, so they might trail the host prebuilts
 	// being used for the rest of the build process.
 	pctx.SourcePathVariable("RSClangBase", "prebuilts/clang/host")
-	pctx.SourcePathVariable("RSClangVersion", "clang-3289846")
-	pctx.SourcePathVariable("RSReleaseVersion", "3.8")
+	pctx.SourcePathVariable("RSClangVersion", "9.0")
+	pctx.SourcePathVariable("RSReleaseVersion", "9.0")
 	pctx.StaticVariable("RSLLVMPrebuiltsPath", "${RSClangBase}/${HostPrebuiltTag}/${RSClangVersion}/bin")
 	pctx.StaticVariable("RSIncludePath", "${RSLLVMPrebuiltsPath}/../lib64/clang/${RSReleaseVersion}/include")
 

@@ -67,7 +67,7 @@ var (
 
 	partialLd = pctx.AndroidStaticRule("partialLd",
 		blueprint.RuleParams{
-			Command:     "$ldCmd -nostdlib -Wl,-r ${in} -o ${out} ${ldFlags}",
+			Command:     "$ldCmd -nostdlib -no-pie -Wl,-r ${in} -o ${out} ${ldFlags}",
 			CommandDeps: []string{"$ldCmd"},
 		},
 		"ldCmd", "ldFlags")
@@ -251,6 +251,7 @@ type builderFlags struct {
 	toolchain      config.Toolchain
 	clang          bool
 	tidy           bool
+	polly          bool
 	coverage       bool
 	sAbiDump       bool
 	protoRoot      bool
@@ -428,8 +429,12 @@ func TransformSourceToObj(ctx android.ModuleContext, subdir string, srcFiles and
 
 		ccDesc := ccCmd
 
+		var extraFlags string
 		if flags.clang {
 			ccCmd = "${config.ClangBin}/" + ccCmd
+			if flags.polly {
+				extraFlags = " ${config.PollyFlags}"
+			}
 		} else {
 			ccCmd = gccCmd(flags.toolchain, ccCmd)
 		}
@@ -450,7 +455,7 @@ func TransformSourceToObj(ctx android.ModuleContext, subdir string, srcFiles and
 			Implicits:       cFlagsDeps,
 			OrderOnly:       pathDeps,
 			Args: map[string]string{
-				"cFlags": moduleCflags,
+				"cFlags": moduleCflags + extraFlags,
 				"ccCmd":  ccCmd,
 			},
 		})
