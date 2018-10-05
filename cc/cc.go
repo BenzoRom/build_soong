@@ -1185,8 +1185,6 @@ func (c *Module) depsToPaths(ctx android.ModuleContext) PathDeps {
 		if ccDep == nil {
 			// handling for a few module types that aren't cc Module but that are also supported
 			switch depTag {
-			case android.DefaultsDepTag, android.SourceDepTag:
-				// Nothing to do
 			case genSourceDepTag:
 				if genRule, ok := dep.(genrule.SourceFileGenerator); ok {
 					depPaths.GeneratedSources = append(depPaths.GeneratedSources,
@@ -1224,8 +1222,6 @@ func (c *Module) depsToPaths(ctx android.ModuleContext) PathDeps {
 				} else {
 					ctx.ModuleErrorf("module %q is not a genrule", depName)
 				}
-			default:
-				ctx.ModuleErrorf("depends on non-cc module %q", depName)
 			}
 			return
 		}

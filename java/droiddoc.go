@@ -211,30 +211,20 @@ func (j *Javadoc) collectDeps(ctx android.ModuleContext) deps {
 		otherName := ctx.OtherModuleName(module)
 		tag := ctx.OtherModuleDependencyTag(module)
 
-		switch dep := module.(type) {
-		case Dependency:
-			switch tag {
-			case bootClasspathTag:
+		switch tag {
+		case bootClasspathTag:
+			if dep, ok := module.(Dependency); ok {
 				deps.bootClasspath = append(deps.bootClasspath, dep.ImplementationJars()...)
-			case libTag:
-				deps.classpath = append(deps.classpath, dep.ImplementationJars()...)
-			default:
+			} else {
 				panic(fmt.Errorf("unknown dependency %q for %q", otherName, ctx.ModuleName()))
 			}
-		case android.SourceFileProducer:
-			switch tag {
-			case libTag:
+		case libTag:
+			switch dep := module.(type) {
+			case Dependency:
+				deps.classpath = append(deps.classpath, dep.ImplementationJars()...)
+			case android.SourceFileProducer:
 				checkProducesJars(ctx, dep)
 				deps.classpath = append(deps.classpath, dep.Srcs()...)
-			case android.DefaultsDepTag, android.SourceDepTag:
-				// Nothing to do
-			default:
-				ctx.ModuleErrorf("dependency on genrule %q may only be in srcs, libs", otherName)
-			}
-		default:
-			switch tag {
-			case android.DefaultsDepTag, android.SourceDepTag, droiddocTemplateTag:
-				// Nothing to do
 			default:
 				ctx.ModuleErrorf("depends on non-java module %q", otherName)
 			}

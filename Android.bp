@@ -188,6 +188,9 @@ bootstrap_go_package {
         "genrule/filegroup.go",
         "genrule/genrule.go",
     ],
+    testSrcs: [
+        "genrule/genrule_test.go",
+    ],
     pluginFor: ["soong_build"],
 }
 

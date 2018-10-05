@@ -102,8 +102,9 @@ type Module struct {
 
 	taskGenerator taskFunc
 
-	deps android.Paths
-	rule blueprint.Rule
+	deps       android.Paths
+	rule       blueprint.Rule
+	rawCommand string
 
 	exportedIncludeDirs android.Paths
 
@@ -163,8 +164,6 @@ func (g *Module) GenerateAndroidBuildActions(ctx android.ModuleContext) {
 	if len(g.properties.Tools) > 0 {
 		ctx.VisitDirectDepsBlueprint(func(module blueprint.Module) {
 			switch ctx.OtherModuleDependencyTag(module) {
-			case android.SourceDepTag:
-				// Nothing to do
 			case hostToolDepTag:
 				tool := ctx.OtherModuleName(module)
 				var path android.OptionalPath
@@ -201,8 +200,6 @@ func (g *Module) GenerateAndroidBuildActions(ctx android.ModuleContext) {
 				} else {
 					ctx.ModuleErrorf("host tool %q missing output file", tool)
 				}
-			default:
-				ctx.ModuleErrorf("unknown dependency on %q", ctx.OtherModuleName(module))
 			}
 		})
 	}
@@ -227,13 +224,18 @@ func (g *Module) GenerateAndroidBuildActions(ctx android.ModuleContext) {
 	task := g.taskGenerator(ctx, String(g.properties.Cmd), srcFiles)
 
 	rawCommand, err := android.Expand(task.cmd, func(name string) (string, error) {
+		// report the error directly without returning an error to android.Expand to catch multiple errors in a
+		// single run
+		reportError := func(fmt string, args ...interface{}) (string, error) {
+			ctx.PropertyErrorf("cmd", fmt, args...)
+			return "SOONG_ERROR", nil
+		}
+
 		switch name {
 		case "location":
 			if len(g.properties.Tools) == 0 && len(toolFiles) == 0 {
-				return "", fmt.Errorf("at least one `tools` or `tool_files` is required if $(location) is used")
-			}
-
-			if len(g.properties.Tools) > 0 {
+				return reportError("at least one `tools` or `tool_files` is required if $(location) is used")
+			} else if len(g.properties.Tools) > 0 {
 				return tools[g.properties.Tools[0]].String(), nil
 			} else {
 				return tools[toolFiles[0].Rel()].String(), nil
@@ -245,7 +247,7 @@ func (g *Module) GenerateAndroidBuildActions(ctx android.ModuleContext) {
 		case "depfile":
 			referencedDepfile = true
 			if !Bool(g.properties.Depfile) {
-				return "", fmt.Errorf("$(depfile) used without depfile property")
+				return reportError("$(depfile) used without depfile property")
 			}
 			return "__SBOX_DEPFILE__", nil
 		case "genDir":
@@ -256,20 +258,20 @@ func (g *Module) GenerateAndroidBuildActions(ctx android.ModuleContext) {
 				if tool, ok := tools[label]; ok {
 					return tool.String(), nil
 				} else {
-					return "", fmt.Errorf("unknown location label %q", label)
+					return reportError("unknown location label %q", label)
 				}
 			}
-			return "", fmt.Errorf("unknown variable '$(%s)'", name)
+			return reportError("unknown variable '$(%s)'", name)
 		}
 	})
-
-	if Bool(g.properties.Depfile) && !referencedDepfile {
-		ctx.PropertyErrorf("cmd", "specified depfile=true but did not include a reference to '${depfile}' in cmd")
-	}
 
 	if err != nil {
 		ctx.PropertyErrorf("cmd", "%s", err.Error())
 		return
+	}
+
+	if Bool(g.properties.Depfile) && !referencedDepfile {
+		ctx.PropertyErrorf("cmd", "specified depfile=true but did not include a reference to '${depfile}' in cmd")
 	}
 
 	// tell the sbox command which directory to use as its sandbox root
@@ -286,6 +288,7 @@ func (g *Module) GenerateAndroidBuildActions(ctx android.ModuleContext) {
 	genDir := android.PathForModuleGen(ctx)
 	// Escape the command for the shell
 	rawCommand = "'" + strings.Replace(rawCommand, "'", `'\''`, -1) + "'"
+	g.rawCommand = rawCommand
 	sandboxCommand := fmt.Sprintf("$sboxCmd --sandbox-path %s --output-root %s -c %s %s $allouts",
 		sandboxPath, genDir, rawCommand, depfilePlaceholder)
 
