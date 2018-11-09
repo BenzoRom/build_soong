@@ -90,7 +90,6 @@ func (lto *lto) flags(ctx BaseModuleContext, flags Flags) Flags {
 
 		flags.CFlags = append(flags.CFlags, ltoFlag)
 		flags.LdFlags = append(flags.LdFlags, ltoFlag)
-		flags.ArGoldPlugin = true
 
 		if ctx.Config().IsEnvTrue("USE_THINLTO_CACHE") && Bool(lto.Properties.Lto.Thin) {
 			var cacheDirFormat string
