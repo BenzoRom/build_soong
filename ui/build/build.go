@@ -290,6 +290,13 @@ func Build(ctx Context, config Config) {
 		return
 	}
 
+	if inList("productclean", config.Arguments()) ||
+		inList("product-clean", config.Arguments()) {
+		productClean(ctx, config, what)
+		ctx.Println("Deleted product directories.")
+		return
+	}
+
 	if what&RunSoong != 0 {
 		runSoong(ctx, config)
 	}
