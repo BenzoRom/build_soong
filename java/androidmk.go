@@ -38,7 +38,15 @@ func (library *Library) AndroidMkHostDex(w io.Writer, name string, data android.
 		}
 		fmt.Fprintln(w, "LOCAL_SOONG_HEADER_JAR :=", library.headerJarFile.String())
 		fmt.Fprintln(w, "LOCAL_SOONG_CLASSES_JAR :=", library.implementationAndResourcesJar.String())
-		fmt.Fprintln(w, "LOCAL_REQUIRED_MODULES := "+strings.Join(data.Required, " "))
+		if len(data.Required) > 0 {
+			fmt.Fprintln(w, "LOCAL_REQUIRED_MODULES :=", strings.Join(data.Required, " "))
+		}
+		if len(data.Host_required) > 0 {
+			fmt.Fprintln(w, "LOCAL_HOST_REQUIRED_MODULES :=", strings.Join(data.Host_required, " "))
+		}
+		if len(data.Target_required) > 0 {
+			fmt.Fprintln(w, "LOCAL_TARGET_REQUIRED_MODULES :=", strings.Join(data.Target_required, " "))
+		}
 		if r := library.deviceProperties.Target.Hostdex.Required; len(r) > 0 {
 			fmt.Fprintln(w, "LOCAL_REQUIRED_MODULES +=", strings.Join(r, " "))
 		}
@@ -84,6 +92,10 @@ func (library *Library) AndroidMk() android.AndroidMkData {
 
 				if len(library.additionalCheckedModules) != 0 {
 					fmt.Fprintln(w, "LOCAL_ADDITIONAL_CHECKED_MODULE +=", strings.Join(library.additionalCheckedModules.Strings(), " "))
+				}
+
+				if library.proguardDictionary != nil {
+					fmt.Fprintln(w, "LOCAL_SOONG_PROGUARD_DICT :=", library.proguardDictionary.String())
 				}
 
 				// Temporary hack: export sources used to compile framework.jar to Make
@@ -367,9 +379,6 @@ func (a *AndroidLibrary) AndroidMk() android.AndroidMkData {
 	data.Extra = append(data.Extra, func(w io.Writer, outputFile android.Path) {
 		if a.aarFile != nil {
 			fmt.Fprintln(w, "LOCAL_SOONG_AAR :=", a.aarFile.String())
-		}
-		if a.proguardDictionary != nil {
-			fmt.Fprintln(w, "LOCAL_SOONG_PROGUARD_DICT :=", a.proguardDictionary.String())
 		}
 
 		if a.Name() == "framework-res" {
