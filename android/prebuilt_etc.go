@@ -141,17 +141,19 @@ func (p *PrebuiltEtc) AndroidMkEntries() AndroidMkEntries {
 		Class:      "ETC",
 		SubName:    nameSuffix,
 		OutputFile: OptionalPathForPath(p.outputFilePath),
-		AddCustomEntries: func(name, prefix, moduleDir string, entries *AndroidMkEntries) {
-			entries.SetString("LOCAL_MODULE_TAGS", "optional")
-			entries.SetString("LOCAL_MODULE_PATH", "$(OUT_DIR)/"+p.installDirPath.RelPathString())
-			entries.SetString("LOCAL_INSTALLED_MODULE_STEM", p.outputFilePath.Base())
-			entries.SetString("LOCAL_UNINSTALLABLE_MODULE", strconv.FormatBool(!p.Installable()))
-			entries.SetString("LOCAL_MODULE_TARGET_ARCH :=", p.Arch().ArchType.String())
-			if p.additionalDependencies != nil {
-				for _, path := range *p.additionalDependencies {
-					entries.SetString("LOCAL_ADDITIONAL_DEPENDENCIES", path.String())
+		ExtraEntries: []AndroidMkExtraEntriesFunc{
+			func(entries *AndroidMkEntries) {
+				entries.SetString("LOCAL_MODULE_TAGS", "optional")
+				entries.SetString("LOCAL_MODULE_PATH", "$(OUT_DIR)/"+p.installDirPath.RelPathString())
+				entries.SetString("LOCAL_INSTALLED_MODULE_STEM", p.outputFilePath.Base())
+				entries.SetString("LOCAL_UNINSTALLABLE_MODULE", strconv.FormatBool(!p.Installable()))
+			        entries.SetString("LOCAL_MODULE_TARGET_ARCH :=", p.Arch().ArchType.String())
+				if p.additionalDependencies != nil {
+					for _, path := range *p.additionalDependencies {
+						entries.SetString("LOCAL_ADDITIONAL_DEPENDENCIES", path.String())
+					}
 				}
-			}
+			},
 		},
 	}
 }

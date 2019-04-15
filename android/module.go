@@ -129,6 +129,7 @@ type ModuleContext interface {
 	AddMissingDependencies(deps []string)
 
 	InstallInData() bool
+	InstallInTestcases() bool
 	InstallInSanitizerDir() bool
 	InstallInRecovery() bool
 
@@ -187,6 +188,7 @@ type Module interface {
 	Enabled() bool
 	Target() Target
 	InstallInData() bool
+	InstallInTestcases() bool
 	InstallInSanitizerDir() bool
 	InstallInRecovery() bool
 	SkipInstall()
@@ -661,6 +663,10 @@ func (p *ModuleBase) NoAddressSanitizer() bool {
 }
 
 func (p *ModuleBase) InstallInData() bool {
+	return false
+}
+
+func (p *ModuleBase) InstallInTestcases() bool {
 	return false
 }
 
@@ -1258,6 +1264,10 @@ func (a *ModuleBase) MakeAsPlatform() {
 
 func (a *androidModuleContext) InstallInData() bool {
 	return a.module.InstallInData()
+}
+
+func (a *androidModuleContext) InstallInTestcases() bool {
+	return a.module.InstallInTestcases()
 }
 
 func (a *androidModuleContext) InstallInSanitizerDir() bool {
