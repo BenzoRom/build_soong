@@ -138,6 +138,8 @@ func init() {
 
 		// Added for clang-9.0
 		"-Wno-extra-semi-stmt",
+		"-Wno-string-plus-int",
+		"-Wno-return-std-move",
 	}, " "))
 
 	pctx.StaticVariable("ClangExtraCppflags", strings.Join([]string{
