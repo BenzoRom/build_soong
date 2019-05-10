@@ -174,7 +174,7 @@ func constructWritablePath(ctx android.PathContext, path string) android.Writabl
 
 // LoadGlobalConfig reads the global dexpreopt.config file into a GlobalConfig struct.  It is used directly in Soong
 // and in dexpreopt_gen called from Make to read the $OUT/dexpreopt.config written by Make.
-func LoadGlobalConfig(ctx android.PathContext, path string) (GlobalConfig, error) {
+func LoadGlobalConfig(ctx android.PathContext, path string) (GlobalConfig, []byte, error) {
 	type GlobalJSONConfig struct {
 		GlobalConfig
 
@@ -196,9 +196,9 @@ func LoadGlobalConfig(ctx android.PathContext, path string) (GlobalConfig, error
 	}
 
 	config := GlobalJSONConfig{}
-	err := loadConfig(ctx, path, &config)
+	data, err := loadConfig(ctx, path, &config)
 	if err != nil {
-		return config.GlobalConfig, err
+		return config.GlobalConfig, nil, err
 	}
 
 	// Construct paths that require a PathContext.
@@ -213,7 +213,7 @@ func LoadGlobalConfig(ctx android.PathContext, path string) (GlobalConfig, error
 	config.GlobalConfig.Tools.VerifyUsesLibraries = constructPath(ctx, config.Tools.VerifyUsesLibraries)
 	config.GlobalConfig.Tools.ConstructContext = constructPath(ctx, config.Tools.ConstructContext)
 
-	return config.GlobalConfig, nil
+	return config.GlobalConfig, data, nil
 }
 
 // LoadModuleConfig reads a per-module dexpreopt.config file into a ModuleConfig struct.  It is not used in Soong, which
@@ -237,7 +237,7 @@ func LoadModuleConfig(ctx android.PathContext, path string) (ModuleConfig, error
 
 	config := ModuleJSONConfig{}
 
-	err := loadConfig(ctx, path, &config)
+	_, err := loadConfig(ctx, path, &config)
 	if err != nil {
 		return config.ModuleConfig, err
 	}
@@ -255,24 +255,24 @@ func LoadModuleConfig(ctx android.PathContext, path string) (ModuleConfig, error
 	return config.ModuleConfig, nil
 }
 
-func loadConfig(ctx android.PathContext, path string, config interface{}) error {
+func loadConfig(ctx android.PathContext, path string, config interface{}) ([]byte, error) {
 	r, err := ctx.Fs().Open(path)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer r.Close()
 
 	data, err := ioutil.ReadAll(r)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = json.Unmarshal(data, config)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return data, nil
 }
 
 func GlobalConfigForTests(ctx android.PathContext) GlobalConfig {
