@@ -328,7 +328,7 @@ func makeVarsToolchain(ctx android.MakeVarsContext, secondPrefix string,
 	} else {
 		ctx.Strict(makePrefix+"AR", "${config.ClangBin}/llvm-ar")
 		ctx.Strict(makePrefix+"READELF", gccCmd(toolchain, "readelf"))
-		ctx.Strict(makePrefix+"NM", gccCmd(toolchain, "nm"))
+		ctx.Strict(makePrefix+"NM", "${config.ClangBin}/llvm-nm")
 	}
 
 	if target.Os == android.Windows {

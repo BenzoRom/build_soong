@@ -40,7 +40,7 @@ do_elf() {
 
 do_macho() {
     otool -l "${infile}" | grep LC_ID_DYLIB -A 5 > "${outfile}.tmp"
-    nm -gP "${infile}" | cut -f1-2 -d" " | grep -v 'U$' >> "${outfile}.tmp"
+    llvm-nm --extern-only --format=posix "${infile}" | cut -f1-2 -d" " | grep -v 'U$' >> "${outfile}.tmp"
 }
 
 
