@@ -250,7 +250,7 @@ func (compiler *baseCompiler) compilerFlags(ctx ModuleContext, flags Flags, deps
 	CheckBadCompilerFlags(ctx, "conlyflags", compiler.Properties.Conlyflags)
 	CheckBadCompilerFlags(ctx, "asflags", compiler.Properties.Asflags)
 
-	esc := proptools.NinjaAndShellEscape
+	esc := proptools.NinjaAndShellEscapeList
 
 	flags.CFlags = append(flags.CFlags, esc(compiler.Properties.Cflags)...)
 	flags.CppFlags = append(flags.CppFlags, esc(compiler.Properties.Cppflags)...)

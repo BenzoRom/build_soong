@@ -69,7 +69,7 @@ func (tidy *tidyFeature) flags(ctx ModuleContext, flags Flags) Flags {
 
 	flags.Tidy = true
 
-	esc := proptools.NinjaAndShellEscape
+	esc := proptools.NinjaAndShellEscapeList
 
 	flags.TidyFlags = append(flags.TidyFlags, esc(tidy.Properties.Tidy_flags)...)
 	if len(flags.TidyFlags) == 0 {
