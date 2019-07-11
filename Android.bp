@@ -77,6 +77,7 @@ bootstrap_go_package {
         "android/env.go",
     ],
     testSrcs: [
+        "android/androidmk_test.go",
         "android/arch_test.go",
         "android/config_test.go",
         "android/expand_test.go",
@@ -282,6 +283,7 @@ bootstrap_go_package {
         "java/testing.go",
     ],
     testSrcs: [
+        "java/androidmk_test.go",
         "java/app_test.go",
         "java/device_host_converter_test.go",
         "java/dexpreopt_test.go",
