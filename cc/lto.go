@@ -92,6 +92,11 @@ func (lto *lto) flags(ctx BaseModuleContext, flags Flags) Flags {
 		flags.AsFlags = append(flags.AsFlags, ltoFlag)
 		flags.LdFlags = append(flags.LdFlags, ltoFlag)
 
+                // Enable experimental new pass manager for lld
+		if lto.useClangLld(ctx) {
+		        flags.LdFlags = append(flags.LdFlags, "-Wl,--lto-new-pass-manager")
+		}
+
 		if !ctx.Config().IsEnvFalse("USE_THINLTO_CACHE") && Bool(lto.Properties.Lto.Thin) {
 			var cacheDirFormat string
 			var cachePolicyFormat string
