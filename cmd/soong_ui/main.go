@@ -113,10 +113,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	writer := terminal.NewWriter(c.stdio())
-	defer writer.Finish()
+	output := terminal.NewStatusOutput(c.stdio().Stdout(), os.Getenv("NINJA_STATUS"),
+		build.OsEnvironment().IsEnvTrue("ANDROID_QUIET_BUILD"))
 
-	log := logger.New(writer)
+	log := logger.New(output)
 	defer log.Cleanup()
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -129,8 +129,7 @@ func main() {
 
 	stat := &status.Status{}
 	defer stat.Finish()
-	stat.AddOutput(terminal.NewStatusOutput(writer, os.Getenv("NINJA_STATUS"),
-		build.OsEnvironment().IsEnvTrue("ANDROID_QUIET_BUILD")))
+	stat.AddOutput(output)
 	stat.AddOutput(trace.StatusTracer())
 
 	build.SetupSignals(log, cancel, func() {
@@ -144,7 +143,7 @@ func main() {
 		Logger:  log,
 		Metrics: met,
 		Tracer:  trace,
-		Writer:  writer,
+		Writer:  output,
 		Status:  stat,
 	}}
 
@@ -162,8 +161,9 @@ func main() {
 	trace.SetOutput(filepath.Join(logsDir, "build.trace"))
 	stat.AddOutput(status.NewVerboseLog(log, filepath.Join(logsDir, "verbose.log")))
 	stat.AddOutput(status.NewErrorLog(log, filepath.Join(logsDir, "error.log")))
+	stat.AddOutput(status.NewProtoErrorLog(log, filepath.Join(logsDir, "build_error")))
 
-	defer met.Dump(filepath.Join(logsDir, "build_metrics"))
+	defer met.Dump(filepath.Join(logsDir, "soong_metrics"))
 
 	if start, ok := os.LookupEnv("TRACE_BEGIN_SOONG"); ok {
 		if !strings.HasSuffix(start, "N") {
@@ -360,15 +360,21 @@ func buildActionConfig(ctx build.Context, args ...string) build.Config {
 		action:            build.BUILD_MODULES,
 		buildDependencies: true,
 	}, {
+		// buildDependencies is set to true as mm is being deprecated. This is redirecting to mma build
+		// command behaviour. Once it has soaked for a while, the build command is deleted from here once
+		// it has been removed from the envsetup.sh.
 		name:              "modules-in-a-dir-no-deps",
 		description:       "Build action: builds all of the modules in the current directory without their dependencies.",
 		action:            build.BUILD_MODULES_IN_A_DIRECTORY,
-		buildDependencies: false,
+		buildDependencies: true,
 	}, {
+		// buildDependencies is set to true as mmm is being deprecated. This is redirecting to mmma build
+		// command behaviour. Once it has soaked for a while, the build command is deleted from here once
+		// it has been removed from the envsetup.sh.
 		name:              "modules-in-dirs-no-deps",
 		description:       "Build action: builds all of the modules in the supplied directories without their dependencies.",
 		action:            build.BUILD_MODULES_IN_DIRECTORIES,
-		buildDependencies: false,
+		buildDependencies: true,
 	}, {
 		name:              "modules-in-a-dir",
 		description:       "Build action: builds all of the modules in the current directory and their dependencies.",
@@ -421,13 +427,13 @@ func buildActionConfig(ctx build.Context, args ...string) build.Config {
 func make(ctx build.Context, config build.Config, _ []string, logsDir string) {
 	if config.IsVerbose() {
 		writer := ctx.Writer
-		writer.Print("! The argument `showcommands` is no longer supported.")
-		writer.Print("! Instead, the verbose log is always written to a compressed file in the output dir:")
-		writer.Print("!")
-		writer.Print(fmt.Sprintf("!   gzip -cd %s/verbose.log.gz | less -R", logsDir))
-		writer.Print("!")
-		writer.Print("! Older versions are saved in verbose.log.#.gz files")
-		writer.Print("")
+		fmt.Fprintln(writer, "! The argument `showcommands` is no longer supported.")
+		fmt.Fprintln(writer, "! Instead, the verbose log is always written to a compressed file in the output dir:")
+		fmt.Fprintln(writer, "!")
+		fmt.Fprintf(writer, "!   gzip -cd %s/verbose.log.gz | less -R\n", logsDir)
+		fmt.Fprintln(writer, "!")
+		fmt.Fprintln(writer, "! Older versions are saved in verbose.log.#.gz files")
+		fmt.Fprintln(writer, "")
 		time.Sleep(5 * time.Second)
 	}
 
