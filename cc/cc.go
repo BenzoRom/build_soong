@@ -308,7 +308,7 @@ var (
                               "libRSSupport", "libskia", "libsonic", "libspeexresampler", "libstagefright_amrnbenc",
                               "libstagefright_amrwbenc", "libtflite_kernels", "libtflite_kernel_utils", "libvpx", "libwebp-decode",
                               "libwebp-encode", "libwebrtc_apm", "libwebrtc_isac", "libwebrtc_spl", "libyuv", "libart-compiler",
-                              "libunwindstack",}
+                              "libunwindstack", "libFFTEm", "libgsm",}
 )
 
 // Module contains the properties and members used by all C/C++ module types, and implements
