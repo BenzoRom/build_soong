@@ -272,16 +272,16 @@ func TestClasspath(t *testing.T) {
 				}
 			}
 
-			t.Run("1.8", func(t *testing.T) {
-				// Test default javac 1.8
-				config := testConfig(nil)
+			// Test with legacy javac -source 1.8 -target 1.8
+			t.Run("Java language level 8", func(t *testing.T) {
+				config := testConfig(map[string]string{"EXPERIMENTAL_JAVA_LANGUAGE_LEVEL_9": "false"})
 				if testcase.unbundled {
 					config.TestProductVariables.Unbundled_build = proptools.BoolPtr(true)
 				}
 				if testcase.pdk {
 					config.TestProductVariables.Pdk = proptools.BoolPtr(true)
 				}
-				ctx := testContext(config, bp, nil)
+				ctx := testContext(bp, nil)
 				run(t, ctx, config)
 
 				checkClasspath(t, ctx)
@@ -299,16 +299,16 @@ func TestClasspath(t *testing.T) {
 				}
 			})
 
-			// Test again with javac 1.9
-			t.Run("1.9", func(t *testing.T) {
-				config := testConfig(map[string]string{"EXPERIMENTAL_USE_OPENJDK9": "true"})
+			// Test with default javac -source 9 -target 9
+			t.Run("Java language level 9", func(t *testing.T) {
+				config := testConfig(nil)
 				if testcase.unbundled {
 					config.TestProductVariables.Unbundled_build = proptools.BoolPtr(true)
 				}
 				if testcase.pdk {
 					config.TestProductVariables.Pdk = proptools.BoolPtr(true)
 				}
-				ctx := testContext(config, bp, nil)
+				ctx := testContext(bp, nil)
 				run(t, ctx, config)
 
 				javac := ctx.ModuleForTests("foo", variant).Rule("javac")
@@ -324,7 +324,8 @@ func TestClasspath(t *testing.T) {
 
 			// Test again with PLATFORM_VERSION_CODENAME=REL
 			t.Run("REL", func(t *testing.T) {
-				config := testConfig(nil)
+				// TODO(b/115604102): This test should be rewritten with language level 9
+				config := testConfig(map[string]string{"EXPERIMENTAL_JAVA_LANGUAGE_LEVEL_9": "false"})
 				config.TestProductVariables.Platform_sdk_codename = proptools.StringPtr("REL")
 				config.TestProductVariables.Platform_sdk_final = proptools.BoolPtr(true)
 
@@ -334,7 +335,7 @@ func TestClasspath(t *testing.T) {
 				if testcase.pdk {
 					config.TestProductVariables.Pdk = proptools.BoolPtr(true)
 				}
-				ctx := testContext(config, bp, nil)
+				ctx := testContext(bp, nil)
 				run(t, ctx, config)
 
 				checkClasspath(t, ctx)
