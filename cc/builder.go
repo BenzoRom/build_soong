@@ -138,7 +138,7 @@ var (
 		blueprint.RuleParams{
 			Depfile:     "${out}.d",
 			Deps:        blueprint.DepsGCC,
-			Command:     "CROSS_COMPILE=$crossCompile XZ=$xzCmd CLANG_BIN=${config.ClangBin} $stripPath ${args} -i ${in} -o ${out} -d ${out}.d",
+			Command:     "XZ=$xzCmd CLANG_BIN=${config.ClangBin} $stripPath ${args} -i ${in} -o ${out} -d ${out}.d",
 			CommandDeps: []string{"$stripPath", "$xzCmd"},
 			Pool:        darwinStripPool,
 		},
@@ -155,7 +155,7 @@ var (
 		blueprint.RuleParams{
 			Depfile:     "${out}.d",
 			Deps:        blueprint.DepsGCC,
-			Command:     "CROSS_COMPILE=$crossCompile $tocPath $format -i ${in} -o ${out} -d ${out}.d",
+			Command:     "CLANG_BIN=${config.ClangBin} $tocPath $format -i ${in} -o ${out} -d ${out}.d",
 			CommandDeps: []string{"$tocPath"},
 			Restat:      true,
 		},
