@@ -151,6 +151,7 @@ type Flags struct {
 
 	Toolchain config.Toolchain
 	Tidy      bool
+	Polly     bool
 	Coverage  bool
 	SAbiDump  bool
 
@@ -179,6 +180,9 @@ type ObjectLinkerProperties struct {
 type BaseProperties struct {
 	// Deprecated. true is the default, false is invalid.
 	Clang *bool `android:"arch_variant"`
+
+	// compile module using polly
+	Polly *bool `android:"arch_variant"`
 
 	// Minimum sdk version supported when compiling against the ndk
 	Sdk_version *string
@@ -357,6 +361,18 @@ var (
 	ndkLateStubDepTag     = dependencyTag{name: "ndk late stub", library: true}
 	vndkExtDepTag         = dependencyTag{name: "vndk extends", library: true}
 	runtimeDepTag         = dependencyTag{name: "runtime lib"}
+	pollyDisabled         = []string{"libaom", "libart-compiler", "libart", "libavcenc", "libavcdec", "libbluetooth", "libblasV8",
+				"libbnnmlowp", "libbnnmlowpV8", "libcodec2_soft_hevcdec", "libcodec2_soft_hevcenc",
+				"libcodec2_soft_av1dec", "libcodec2_soft_vp8dec", "libcodec2_soft_vp9dec", "libcodec2_soft_vp8enc",
+				"libcodec2_soft_vp9enc", "libdng_sdk", "libhevcdec", "libhevcenc", "libF77blas", "libF77blasV8",
+				"libfdlibm", "libFFTEm", "libFraunhoferAAC", "libgsm", "libinputreader", "libjpeg", "libjpeg_static_ndk",
+				"libLLVMAArch64CodeGen", "libLLVMARMCodeGen", "libm", "libmpeg2dec", "libmedia_jni", "libmusicbundle",
+				"libneuralnetworks_common", "libopus", "libpdfiumfxge", "libpdfiumjpeg", "libpdfiumopenjpeg",
+				"libpdfiumfpdftext", "libpdfiumfx_libopenjpeg", "libreverb", "libRS_internal", "libRSCpuRef",
+				"libRSSupport", "libskia", "libsonic", "libspeexresampler", "libstagefright_amrnbenc",
+				"libstagefright_amrwbenc", "libtflite_kernels", "libtflite_kernel_utils", "libv8base", "libv8src",
+				"libvpx", "libwebp-decode", "libwebp-encode", "libwebrtc_apm", "libwebrtc_isac", "libwebrtc_spl",
+				"libyuv", "libunwindstack",}
 )
 
 // Module contains the properties and members used by all C/C++ module types, and implements
@@ -924,6 +940,7 @@ func (c *Module) GenerateAndroidBuildActions(actx android.ModuleContext) {
 
 	flags := Flags{
 		Toolchain: c.toolchain(ctx),
+		Polly:	   c.polly(ctx),
 	}
 	if c.compiler != nil {
 		flags = c.compiler.compilerFlags(ctx, flags, deps)
@@ -1535,6 +1552,24 @@ func checkDoubleLoadableLibraries(ctx android.TopDownMutatorContext) {
 			}
 		}
 	}
+}
+
+func (c *Module) polly(ctx BaseModuleContext) bool {
+	polly := Bool(c.Properties.Polly)
+
+	if ctx.Host() {
+		return false
+	}
+
+	if inList(ctx.baseModuleName(), pollyDisabled) {
+		return false
+	}
+
+	if c.Properties.Polly == nil && config.Polly {
+		return true
+	}
+
+	return polly
 }
 
 // Convert dependencies to paths.  Returns a PathDeps containing paths

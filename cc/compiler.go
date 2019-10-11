@@ -235,6 +235,10 @@ func (compiler *baseCompiler) compilerDeps(ctx DepsContext, deps Deps) Deps {
 		deps.StaticLibs = append(deps.StaticLibs, "libomp")
 	}
 
+	if compiler.flags.polly {
+		deps.StaticLibs = append(deps.StaticLibs, "libomp")
+	}
+
 	return deps
 }
 
@@ -514,6 +518,10 @@ func (compiler *baseCompiler) compilerFlags(ctx ModuleContext, flags Flags, deps
 	}
 
 	if Bool(compiler.Properties.Openmp) {
+		flags.CFlags = append(flags.CFlags, "-fopenmp")
+	}
+
+	if flags.Polly {
 		flags.CFlags = append(flags.CFlags, "-fopenmp")
 	}
 

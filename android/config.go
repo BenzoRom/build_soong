@@ -723,6 +723,14 @@ func (c *config) TargetOpenJDK9() bool {
 	return c.targetOpenJDK9
 }
 
+func (c *config) CustomClangVersion() string {
+	return String(c.productVariables.CustomClangVersion)
+}
+
+func (c *config) CustomClangShortVersion() string {
+	return String(c.productVariables.CustomClangShortVersion)
+}
+
 func (c *config) ClangTidy() bool {
 	return Bool(c.productVariables.ClangTidy)
 }

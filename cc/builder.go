@@ -260,6 +260,7 @@ type builderFlags struct {
 	rsFlags         string
 	toolchain       config.Toolchain
 	tidy            bool
+	polly           bool
 	coverage        bool
 	sAbiDump        bool
 
@@ -429,7 +430,11 @@ func TransformSourceToObj(ctx android.ModuleContext, subdir string, srcFiles and
 
 		ccDesc := ccCmd
 
+		var extraFlags string
 		ccCmd = "${config.ClangBin}/" + ccCmd
+		if flags.polly {
+			extraFlags = " ${config.PollyFlags}"
+		}
 
 		var implicitOutputs android.WritablePaths
 		if coverage {
@@ -447,7 +452,7 @@ func TransformSourceToObj(ctx android.ModuleContext, subdir string, srcFiles and
 			Implicits:       cFlagsDeps,
 			OrderOnly:       pathDeps,
 			Args: map[string]string{
-				"cFlags": moduleCflags,
+				"cFlags": moduleCflags + extraFlags,
 				"ccCmd":  ccCmd,
 			},
 		})

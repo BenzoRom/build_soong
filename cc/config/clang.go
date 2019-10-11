@@ -101,9 +101,6 @@ func init() {
 		// not emit the table by default on Android since NDK still uses GNU binutils.
 		"-faddrsig",
 
-		// -Wimplicit-fallthrough is not enabled by -Wall.
-		"-Wimplicit-fallthrough",
-
 		// Help catch common 32/64-bit errors.
 		"-Werror=int-conversion",
 
@@ -139,6 +136,13 @@ func init() {
 		// Disable -Winconsistent-missing-override until we can clean up the existing
 		// codebase for it.
 		"-Wno-inconsistent-missing-override",
+
+		// Added for clang-10.0
+		"-Wno-extra-semi-stmt",
+		"-Wno-string-plus-int",
+		"-Wno-return-std-move",
+		"-Wno-implicit-fallthrough",
+		"-Wno-missing-variable-declarations",
 	}, " "))
 
 	pctx.StaticVariable("ClangExtraCppflags", strings.Join([]string{
@@ -162,6 +166,7 @@ func init() {
 		// fixed.
 		//"-Werror=null-dereference",
 		"-Werror=return-type",
+		"-Wno-error",
 
 		// http://b/72331526 Disable -Wtautological-* until the instances detected by these
 		// new warnings are fixed.

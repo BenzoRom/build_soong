@@ -31,6 +31,7 @@ var (
 		"-Wno-unused",
 		"-Winit-self",
 		"-Wpointer-arith",
+		"-Wno-inconsistent-missing-override",
 
 		// Make paths in deps files relative
 		"-no-canonical-prefixes",
@@ -85,12 +86,34 @@ var (
 		"-Wl,--no-undefined-version",
 		"-Wl,--exclude-libs,libgcc.a",
 		"-Wl,--exclude-libs,libgcc_stripped.a",
+		// Until master clang/lld hidl error solved
+		"-Wl,--allow-multiple-definition",
 	}
 
 	deviceGlobalLldflags = append(ClangFilterUnknownLldflags(deviceGlobalLdflags),
 		[]string{
 			"-fuse-ld=lld",
 		}...)
+
+	pollyCflags = []string{
+		"-O3",
+		"-mllvm", "-polly ",
+		"-mllvm", "-polly-parallel", "-lgomp",
+		"-mllvm", "-polly-omp-backend=LLVM",
+		"-mllvm", "-polly-num-threads=0",
+		"-mllvm", "-polly-scheduling=dynamic",
+		"-mllvm", "-polly-scheduling-chunksize=1",
+		"-mllvm", "-polly-ast-use-context",
+		"-mllvm", "-polly-vectorizer=polly",
+		"-mllvm", "-polly-opt-fusion=max",
+		"-mllvm", "-polly-opt-maximize-bands=yes",
+		"-mllvm", "-polly-run-dce",
+		"-mllvm", "-polly-position=before-vectorizer",
+		"-mllvm", "-polly-run-inliner",
+		"-mllvm", "-polly-detect-keep-going",
+		"-mllvm", "-polly-opt-simplify-deps=no",
+		"-mllvm", "-polly-rtc-max-arrays-per-group=40",
+	}
 
 	hostGlobalCflags = []string{}
 
@@ -117,13 +140,14 @@ var (
 	CppStdVersion             = "gnu++17"
 	ExperimentalCStdVersion   = "gnu11"
 	ExperimentalCppStdVersion = "gnu++2a"
+	Polly                     = true
 
 	NdkMaxPrebuiltVersionInt = 27
 
 	// prebuilts/clang default settings.
 	ClangDefaultBase         = "prebuilts/clang/host"
-	ClangDefaultVersion      = "clang-r353983c"
-	ClangDefaultShortVersion = "9.0.3"
+	ClangDefaultVersion      = "10.0"
+	ClangDefaultShortVersion = "10.0.0"
 
 	// Directories with warnings from Android.bp files.
 	WarningAllowedProjects = []string{
@@ -195,7 +219,7 @@ func init() {
 		return "${ClangDefaultBase}"
 	})
 	pctx.VariableFunc("ClangVersion", func(ctx android.PackageVarContext) string {
-		if override := ctx.Config().Getenv("LLVM_PREBUILTS_VERSION"); override != "" {
+		if override := ctx.Config().CustomClangVersion(); override != "" {
 			return override
 		}
 		return ClangDefaultVersion
@@ -205,12 +229,14 @@ func init() {
 	pctx.StaticVariable("ClangTidyShellPath", "build/soong/scripts/clang-tidy.sh")
 
 	pctx.VariableFunc("ClangShortVersion", func(ctx android.PackageVarContext) string {
-		if override := ctx.Config().Getenv("LLVM_RELEASE_VERSION"); override != "" {
+		if override := ctx.Config().CustomClangShortVersion(); override != "" {
 			return override
 		}
 		return ClangDefaultShortVersion
 	})
 	pctx.StaticVariable("ClangAsanLibDir", "${ClangBase}/linux-x86/${ClangVersion}/lib64/clang/${ClangShortVersion}/lib/linux")
+
+	pctx.StaticVariable("PollyFlags", strings.Join(pollyCflags, " "))
 
 	// These are tied to the version of LLVM directly in external/llvm, so they might trail the host prebuilts
 	// being used for the rest of the build process.
