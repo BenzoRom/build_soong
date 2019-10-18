@@ -136,13 +136,6 @@ func init() {
 		// Disable -Winconsistent-missing-override until we can clean up the existing
 		// codebase for it.
 		"-Wno-inconsistent-missing-override",
-
-		// Added for clang-10.0
-		"-Wno-extra-semi-stmt",
-		"-Wno-string-plus-int",
-		"-Wno-return-std-move",
-		"-Wno-implicit-fallthrough",
-		"-Wno-missing-variable-declarations",
 	}, " "))
 
 	pctx.StaticVariable("ClangExtraCppflags", strings.Join([]string{
@@ -181,6 +174,18 @@ func init() {
 
 		// Disable this warning because we don't care about behavior with older compilers.
 		"-Wno-return-std-move-in-c++11",
+
+		// Added for clang-10.0
+		"-Wno-c99-designator",
+		"-Wno-extra-semi-stmt",
+		"-Wno-implicit-fallthrough",
+		"-Wno-implicit-int-float-conversion",
+		"-Wno-incomplete-setjmp-declaration",
+		"-Wno-missing-exception-spec",
+		"-Wno-missing-variable-declarations",
+		"-Wno-reorder",
+		"-Wno-return-std-move",
+		"-Wno-string-plus-int",
 	}, " "))
 
 	// Extra cflags for projects under external/ directory to disable warnings that are infeasible
