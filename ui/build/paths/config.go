@@ -106,7 +106,6 @@ var Configuration = map[string]PathConfig{
 	"tar":      Allowed,
 	"timeout":  Allowed,
 	"tr":       Allowed,
-	"unzip":    Allowed,
 	"xz":       Allowed,
 	"zip":      Allowed,
 	"zipinfo":  Allowed,
