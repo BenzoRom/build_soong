@@ -851,7 +851,13 @@ func (a *AndroidAppImport) GenerateAndroidBuildActions(ctx android.ModuleContext
 	jnisUncompressed := android.PathForModuleOut(ctx, "jnis-uncompressed", ctx.ModuleName()+".apk")
 	a.uncompressEmbeddedJniLibs(ctx, srcApk, jnisUncompressed.OutputPath)
 
-	installDir := android.PathForModuleInstall(ctx, "app", a.BaseModuleName())
+	var installDir android.OutputPath
+	if Bool(a.properties.Privileged) {
+		installDir = android.PathForModuleInstall(ctx, "priv-app", a.BaseModuleName())
+	} else {
+		installDir = android.PathForModuleInstall(ctx, "app", a.BaseModuleName())
+	}
+
 	a.dexpreopter.installPath = installDir.Join(ctx, a.BaseModuleName()+".apk")
 	a.dexpreopter.isInstallable = true
 	a.dexpreopter.isPresignedPrebuilt = Bool(a.properties.Presigned)
