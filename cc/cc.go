@@ -368,7 +368,7 @@ var (
 				"libbnnmlowp", "libbnnmlowpV8", "libcodec2_soft_hevcdec", "libcodec2_soft_hevcenc",
 				"libcodec2_soft_av1dec", "libcodec2_soft_vp8dec", "libcodec2_soft_vp9dec", "libcodec2_soft_vp8enc",
 				"libcodec2_soft_vp9enc", "libdng_sdk", "libhevcdec", "libhevcenc", "libF77blas", "libF77blasV8",
-				"libfdlibm", "libFFTEm", "libFraunhoferAAC", "libgsm", "libinputreader", "libjpeg", "libjpeg_static_ndk",
+				"libfdlibm", "libFFTEm", "libFraunhoferAAC", "libgav1", "libgsm", "libinputreader", "libjpeg", "libjpeg_static_ndk",
 				"libLLVMAArch64CodeGen", "libLLVMARMCodeGen", "libm", "libmpeg2dec", "libmedia_jni", "libmusicbundle",
 				"libneuralnetworks_common", "libopus", "libpdfiumfxge", "libpdfiumjpeg", "libpdfiumopenjpeg",
 				"libpdfiumfpdftext", "libpdfiumfx_libopenjpeg", "libreverb", "libRS_internal", "libRSCpuRef",
