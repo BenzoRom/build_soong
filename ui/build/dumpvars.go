@@ -211,6 +211,9 @@ func runMakeProductConfig(ctx Context, config Config) {
 		// Whether to enable the network during the build
 		"BUILD_BROKEN_USES_NETWORK",
 
+		// Extra environment variables to be exported to ninja
+		"BUILD_BROKEN_NINJA_USES_ENV_VARS",
+
 		// Not used, but useful to be in the soong.log
 		"BOARD_VNDK_VERSION",
 		"BUILD_BROKEN_ANDROIDMK_EXPORTS",
@@ -247,4 +250,5 @@ func runMakeProductConfig(ctx Context, config Config) {
 	config.SetBuildBrokenDupRules(make_vars["BUILD_BROKEN_DUP_RULES"] == "true")
 	config.SetBuildBrokenPhonyTargets(make_vars["BUILD_BROKEN_PHONY_TARGETS"] == "true")
 	config.SetBuildBrokenUsesNetwork(make_vars["BUILD_BROKEN_USES_NETWORK"] == "true")
+	config.SetBuildBrokenNinjaUsesEnvVars(strings.Fields(make_vars["BUILD_BROKEN_NINJA_USES_ENV_VARS"]))
 }
