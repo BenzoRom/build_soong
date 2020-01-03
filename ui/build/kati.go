@@ -151,6 +151,25 @@ func runKatiBuild(ctx Context, config Config) {
 		"KATI_PACKAGE_MK_DIR="+config.KatiPackageMkDir())
 
 	runKati(ctx, config, katiBuildSuffix, args, func(env *Environment) {})
+
+	cleanOldInstalledFiles(ctx, config)
+}
+
+func cleanOldInstalledFiles(ctx Context, config Config) {
+	ctx.BeginTrace("clean", "clean old installed files")
+	defer ctx.EndTrace()
+
+	// We shouldn't be removing files from one side of the two-step asan builds
+	var suffix string
+	if v, ok := config.Environment().Get("SANITIZE_TARGET"); ok {
+		if sanitize := strings.Fields(v); inList("address", sanitize) {
+			suffix = "_asan"
+		}
+	}
+
+	cleanOldFiles(ctx, config.ProductOut(), ".installable_files"+suffix)
+
+	cleanOldFiles(ctx, config.HostOut(), ".installable_test_files")
 }
 
 func runKatiPackage(ctx Context, config Config) {
