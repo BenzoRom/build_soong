@@ -38,6 +38,7 @@ bootstrap_go_package {
         "soong",
         "soong-env",
         "soong-shared",
+        "soong-ui-metrics_proto",
     ],
     srcs: [
         "android/androidmk.go",
@@ -51,6 +52,7 @@ bootstrap_go_package {
         "android/filegroup.go",
         "android/hooks.go",
         "android/makevars.go",
+        "android/metrics.go",
         "android/module.go",
         "android/mutator.go",
         "android/namespace.go",
