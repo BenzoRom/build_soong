@@ -201,6 +201,13 @@ func init() {
 		"-Wno-sizeof-array-div",
 		"-Wno-tautological-bitwise-compare",
 		"-Wno-tautological-overlap-compare",
+		// Added for r385598
+		"-Wno-deprecated-copy",
+		"-Wno-misleading-indentation",
+		"-Wno-non-c-typedef-for-linkage",
+		"-Wno-range-loop-construct",
+		"-Wno-zero-as-null-pointer-constant",
+		"-Wno-error=void-pointer-to-int-cast",
 	}, " "))
 
 	// Extra cflags for projects under external/ directory to disable warnings that are infeasible
@@ -219,6 +226,7 @@ func init() {
 
 		"-Wno-implicit-int-float-conversion",
 		"-Wno-pointer-compare",
+		"-Wno-pointer-sign",
 		"-Wno-xor-used-as-pow",
 		"-Wno-final-dtor-non-final-class",
 		// Can be re-enabled via -Wall.
