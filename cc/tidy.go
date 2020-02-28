@@ -117,6 +117,8 @@ func (tidy *tidyFeature) flags(ctx ModuleContext, flags Flags) Flags {
 		// which is used in many Android files.
 		tidyChecks = tidyChecks + ",-cert-dcl16-c"
 	}
+	// Disable for r385598
+	tidyChecks = tidyChecks + ",-cert-dcl51-cpp,-cert-oop57-cpp,-cert-dcl37-c"
 	flags.TidyFlags = append(flags.TidyFlags, tidyChecks)
 
 	if len(tidy.Properties.Tidy_checks_as_errors) > 0 {
