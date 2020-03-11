@@ -173,6 +173,7 @@ func main() {
 	stat.AddOutput(status.NewErrorLog(log, filepath.Join(logsDir, c.logsPrefix+"error.log")))
 	stat.AddOutput(status.NewProtoErrorLog(log, filepath.Join(logsDir, c.logsPrefix+"build_error")))
 	stat.AddOutput(status.NewCriticalPath(log))
+	stat.AddOutput(status.NewBuildProgressLog(log, filepath.Join(logsDir, c.logsPrefix+"build_progress.pb")))
 
 	defer met.Dump(filepath.Join(logsDir, c.logsPrefix+"soong_metrics"))
 
