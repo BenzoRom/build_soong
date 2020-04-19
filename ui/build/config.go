@@ -56,7 +56,6 @@ type configImpl struct {
 	pdkBuild bool
 
 	brokenDupRules     bool
-	brokenPhonyTargets bool
 	brokenUsesNetwork  bool
 	brokenNinjaEnvVars []string
 
@@ -869,14 +868,6 @@ func (c *configImpl) SetBuildBrokenDupRules(val bool) {
 
 func (c *configImpl) BuildBrokenDupRules() bool {
 	return c.brokenDupRules
-}
-
-func (c *configImpl) SetBuildBrokenPhonyTargets(val bool) {
-	c.brokenPhonyTargets = val
-}
-
-func (c *configImpl) BuildBrokenPhonyTargets() bool {
-	return c.brokenPhonyTargets
 }
 
 func (c *configImpl) SetBuildBrokenUsesNetwork(val bool) {

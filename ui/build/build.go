@@ -50,7 +50,6 @@ var combinedBuildNinjaTemplate = template.Must(template.New("combined").Parse(`
 builddir = {{.OutDir}}
 pool local_pool
  depth = {{.Parallel}}
-build _kati_always_build_: phony
 {{if .HasKatiSuffix}}subninja {{.KatiBuildNinjaFile}}
 subninja {{.KatiPackageNinjaFile}}
 {{end -}}
