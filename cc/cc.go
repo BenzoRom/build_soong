@@ -364,7 +364,7 @@ var (
 	ndkLateStubDepTag     = dependencyTag{name: "ndk late stub", library: true}
 	vndkExtDepTag         = dependencyTag{name: "vndk extends", library: true}
 	runtimeDepTag         = dependencyTag{name: "runtime lib"}
-	pollyDisabled         = []string{"libaom", "libart-compiler", "libart", "libavcenc", "libavcdec", "libbluetooth", "libblasV8",
+	pollyDisabledTarget   = []string{"libaom", "libart-compiler", "libart", "libavcenc", "libavcdec", "libbluetooth", "libblasV8",
 				"libbnnmlowp", "libbnnmlowpV8", "libcodec2_soft_hevcdec", "libcodec2_soft_hevcenc",
 				"libcodec2_soft_av1dec", "libcodec2_soft_vp8dec", "libcodec2_soft_vp9dec", "libcodec2_soft_vp8enc",
 				"libcodec2_soft_vp9enc", "libdng_sdk", "libhevcdec", "libhevcenc", "libF77blas", "libF77blasV8",
@@ -376,6 +376,7 @@ var (
 				"libstagefright_amrwbenc", "libtflite_kernels", "libtflite_kernel_utils", "libv8base", "libv8src",
 				"libvpx", "libwebp-decode", "libwebp-encode", "libwebrtc_apm", "libwebrtc_isac", "libwebrtc_spl",
 				"libyuv", "libunwindstack",}
+	pollyDisabledHost     = []string{"toybox", "bsdiff", "libbsdiff", "libdivsufsort64", "libdivsufsort",}
 )
 
 // Module contains the properties and members used by all C/C++ module types, and implements
@@ -1574,11 +1575,11 @@ func checkDoubleLoadableLibraries(ctx android.TopDownMutatorContext) {
 func (c *Module) polly(ctx BaseModuleContext) bool {
 	polly := Bool(c.Properties.Polly)
 
-	if ctx.Host() {
+	if inList(ctx.baseModuleName(), pollyDisabledHost) {
 		return false
 	}
 
-	if inList(ctx.baseModuleName(), pollyDisabled) {
+	if inList(ctx.baseModuleName(), pollyDisabledTarget) {
 		return false
 	}
 
