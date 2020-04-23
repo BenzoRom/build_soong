@@ -20,8 +20,10 @@ import (
 	"os/exec"
 	"os/user"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 )
 
 type Sandbox struct {
@@ -58,6 +60,7 @@ var sandboxConfig struct {
 	srcDir  string
 	outDir  string
 	distDir string
+	nice    int
 }
 
 func (c *Cmd) sandboxSupported() bool {
@@ -74,6 +77,16 @@ func (c *Cmd) sandboxSupported() bool {
 		sandboxConfig.group = "nogroup"
 		if _, err := user.LookupGroup(sandboxConfig.group); err != nil {
 			sandboxConfig.group = "nobody"
+		}
+
+		// By default nsjail will set nice priority to 19.  However,
+		// if the build has been started with a non-zero nice level already,
+		// let's continue to use it.
+		sandboxConfig.nice = 19 // nsjail default
+		if currentNice, err := syscall.Getpriority(syscall.PRIO_PROCESS, 0); err == nil {
+			if currentNice != 0 {
+				sandboxConfig.nice = currentNice
+			}
 		}
 
 		// These directories will be bind mounted
@@ -110,6 +123,7 @@ func (c *Cmd) sandboxSupported() bool {
 
 		sandboxArgs = append(sandboxArgs,
 			"--disable_clone_newcgroup",
+			"--nice_level", strconv.Itoa(sandboxConfig.nice),
 			"--",
 			"/bin/bash", "-c", `if [ $(hostname) == "android-build" ]; then echo "Android" "Success"; else echo Failure; fi`)
 
@@ -193,6 +207,8 @@ func (c *Cmd) wrapSandbox() {
 		// Disable newcgroup for now, since it may require newer kernels
 		// TODO: try out cgroups
 		"--disable_clone_newcgroup",
+
+		"--nice_level", strconv.Itoa(sandboxConfig.nice),
 
 		// Only log important warnings / errors
 		"-q",
