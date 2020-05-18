@@ -518,11 +518,11 @@ func (compiler *baseCompiler) compilerFlags(ctx ModuleContext, flags Flags, deps
 	}
 
 	if Bool(compiler.Properties.Openmp) {
-		flags.CFlags = append(flags.CFlags, "-fopenmp")
+		flags.CFlags = append(flags.CFlags, "-fopenmp",  "-fopenmp-version=50")
 	}
 
 	if flags.Polly {
-		flags.CFlags = append(flags.CFlags, "-fopenmp")
+		flags.CFlags = append(flags.CFlags, "-fopenmp",  "-fopenmp-version=50")
 	}
 
 	return flags
