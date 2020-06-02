@@ -318,6 +318,7 @@ type linker interface {
 	unstrippedOutputFilePath() android.Path
 
 	nativeCoverage() bool
+	coverageOutputFilePath() android.OptionalPath
 }
 
 type installer interface {
@@ -364,6 +365,7 @@ var (
 	ndkLateStubDepTag     = dependencyTag{name: "ndk late stub", library: true}
 	vndkExtDepTag         = dependencyTag{name: "vndk extends", library: true}
 	runtimeDepTag         = dependencyTag{name: "runtime lib"}
+	coverageDepTag        = dependencyTag{name: "coverage"}
 	pollyDisabledTarget   = []string{"libaom", "libart-compiler", "libart", "libavcenc", "libavcdec", "libbluetooth", "libblasV8",
 				"libbnnmlowp", "libbnnmlowpV8", "libcodec2_soft_hevcdec", "libcodec2_soft_hevcenc",
 				"libcodec2_soft_av1dec", "libcodec2_soft_vp8dec", "libcodec2_soft_vp9dec", "libcodec2_soft_vp8enc",
@@ -437,6 +439,13 @@ func (c *Module) UnstrippedOutputFile() android.Path {
 		return c.linker.unstrippedOutputFilePath()
 	}
 	return nil
+}
+
+func (c *Module) CoverageOutputFile() android.OptionalPath {
+	if c.linker != nil {
+		return c.linker.coverageOutputFilePath()
+	}
+	return android.OptionalPath{}
 }
 
 func (c *Module) RelativeInstallPath() string {
@@ -973,7 +982,7 @@ func (c *Module) GenerateAndroidBuildActions(actx android.ModuleContext) {
 		flags = c.sanitize.flags(ctx, flags)
 	}
 	if c.coverage != nil {
-		flags = c.coverage.flags(ctx, flags)
+		flags, deps = c.coverage.flags(ctx, flags, deps)
 	}
 	if c.lto != nil {
 		flags = c.lto.flags(ctx, flags)
