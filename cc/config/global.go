@@ -101,13 +101,10 @@ var (
 		"-mllvm", "-polly-parallel", "-lgomp",
 		"-mllvm", "-polly-omp-backend=LLVM",
 		"-mllvm", "-polly-opt-fusion=max",
-		"-mllvm", "-polly-opt-simplify-deps=no",
 		"-mllvm", "-polly-position=after-loopopt",
 		"-mllvm", "-polly-run-dce",
-		"-mllvm", "-polly-run-inliner",
 		"-mllvm", "-polly-scheduling=dynamic",
-		"-mllvm", "-polly-scheduling-chunksize=4",
-		"-mllvm", "-polly-vectorizer=stripmine",
+		"-mllvm", "-polly-vectorizer=polly",
 	}
 
 	hostGlobalCflags = []string{}

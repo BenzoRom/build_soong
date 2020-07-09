@@ -366,19 +366,9 @@ var (
 	vndkExtDepTag         = dependencyTag{name: "vndk extends", library: true}
 	runtimeDepTag         = dependencyTag{name: "runtime lib"}
 	coverageDepTag        = dependencyTag{name: "coverage"}
-	pollyDisabledTarget   = []string{"libaom", "libart-compiler", "libart", "libavcenc", "libavcdec", "libbluetooth", "libblasV8",
-				"libbnnmlowp", "libbnnmlowpV8", "libcodec2_soft_hevcdec", "libcodec2_soft_hevcenc",
-				"libcodec2_soft_av1dec", "libcodec2_soft_vp8dec", "libcodec2_soft_vp9dec", "libcodec2_soft_vp8enc",
-				"libcodec2_soft_vp9enc", "libdng_sdk", "libhevcdec", "libhevcenc", "libF77blas", "libF77blasV8",
-				"libfdlibm", "libFFTEm", "libFraunhoferAAC", "libgav1", "libgsm", "libinputreader", "libjpeg", "libjpeg_static_ndk",
-				"libLLVMAArch64CodeGen", "libLLVMARMCodeGen", "libm", "libmpeg2dec", "libmedia_jni", "libmusicbundle",
-				"libneuralnetworks_common", "libopus", "libpdfiumfxge", "libpdfiumjpeg", "libpdfiumopenjpeg",
-				"libpdfiumfpdftext", "libpdfiumfx_libopenjpeg", "libreverb", "libRS_internal", "libRSCpuRef",
-				"libRSSupport", "libskia", "libsonic", "libspeexresampler", "libstagefright_amrnbenc",
-				"libstagefright_amrwbenc", "libtflite_kernels", "libtflite_kernel_utils", "libv8base", "libv8src",
-				"libvpx", "libwebp-decode", "libwebp-encode", "libwebrtc_apm", "libwebrtc_isac", "libwebrtc_spl",
-				"libyuv", "libunwindstack",}
-	pollyDisabledHost     = []string{"toybox", "bsdiff", "libbsdiff", "libdivsufsort64", "libdivsufsort",}
+	pollyDisabledTarget   = []string{"libblas", "libF77blas", "libneuralnetworks_common", "libtflite",
+					 "libtflite_kernels", "libyuv"}
+	pollyDisabledHost     = []string{"bsdiff", "libdivsufsort", "libdivsufsort64"}
 )
 
 // Module contains the properties and members used by all C/C++ module types, and implements
