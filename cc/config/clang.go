@@ -206,6 +206,8 @@ func init() {
 		"-Wno-range-loop-construct",
 		"-Wno-zero-as-null-pointer-constant",
 		"-Wno-error=void-pointer-to-int-cast",
+		// Added for r399872 (12.0.0)
+		"-Wno-suggest-override",
 	}, " "))
 
 	// Extra cflags for projects under external/ directory to disable warnings that are infeasible
