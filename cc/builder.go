@@ -49,9 +49,11 @@ var (
 
 	cc = pctx.AndroidGomaStaticRule("cc",
 		blueprint.RuleParams{
-			Depfile:     "${out}.d",
-			Deps:        blueprint.DepsGCC,
-			Command:     "$relPwd ${config.CcWrapper}$ccCmd -c $cFlags -MD -MF ${out}.d -o $out $in",
+			Depfile: "${out}.d",
+			Deps:    blueprint.DepsGCC,
+			Command: "rm -f $out && " +
+				"$relPwd ${config.CcWrapper}$ccCmd -c $cFlags -MD -MF ${out}.d -o $out $in && " +
+				"touch $out",
 			CommandDeps: []string{"$ccCmd"},
 		},
 		"ccCmd", "cFlags")
