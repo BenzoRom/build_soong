@@ -208,6 +208,8 @@ func init() {
 		"-Wno-error=void-pointer-to-int-cast",
 		// Added for r399872 (12.0.0)
 		"-Wno-suggest-override",
+		"-Wno-suggest-destructor-override",
+		"-Wno-void-pointer-to-enum-cast",
 	}, " "))
 
 	// Extra cflags for projects under external/ directory to disable warnings that are infeasible
