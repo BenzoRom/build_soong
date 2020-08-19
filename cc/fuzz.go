@@ -390,7 +390,7 @@ func (s *fuzzPackager) GenerateBuildActions(ctx android.SingletonContext) {
 			command := builder.Command().BuiltTool(ctx, "soong_zip").
 				Flag("-j").
 				FlagWithOutput("-o ", corpusZip)
-			command.FlagWithRspFileInputList("-l ", fuzzModule.corpus)
+			command.FlagWithRspFileInputList("-r ", fuzzModule.corpus)
 			files = append(files, fileToZip{corpusZip, ""})
 		}
 

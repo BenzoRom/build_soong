@@ -185,12 +185,21 @@ var (
 		"clangBin", "format")
 
 	// Rule for invoking clang-tidy (a clang-based linter).
-	clangTidy = pctx.AndroidStaticRule("clangTidy",
+	clangTidy, clangTidyRE = remoteexec.StaticRules(pctx, "clangTidy",
 		blueprint.RuleParams{
-			Command:     "rm -f $out && ${config.ClangBin}/clang-tidy $tidyFlags $in -- $cFlags && touch $out",
+			Command:     "rm -f $out && $reTemplate${config.ClangBin}/clang-tidy $tidyFlags $in -- $cFlags && touch $out",
 			CommandDeps: []string{"${config.ClangBin}/clang-tidy"},
 		},
-		"cFlags", "tidyFlags")
+		&remoteexec.REParams{
+			Labels:       map[string]string{"type": "lint", "tool": "clang-tidy", "lang": "cpp"},
+			ExecStrategy: "${config.REClangTidyExecStrategy}",
+			Inputs:       []string{"$in"},
+			// OutputFile here is $in for remote-execution since its possible that
+			// clang-tidy modifies the given input file itself and $out refers to the
+			// ".tidy" file generated for ninja-dependency reasons.
+			OutputFiles: []string{"$in"},
+			Platform:    map[string]string{remoteexec.PoolKey: "${config.REClangTidyPool}"},
+		}, []string{"cFlags", "tidyFlags"}, []string{})
 
 	_ = pctx.SourcePathVariable("yasmCmd", "prebuilts/misc/${config.HostPrebuiltTag}/yasm/yasm")
 
@@ -275,9 +284,9 @@ var (
 	// Rule to zip files.
 	zip = pctx.AndroidStaticRule("zip",
 		blueprint.RuleParams{
-			Command:        "cat $out.rsp | tr ' ' '\\n' | tr -d \\' | sort -u > ${out}.tmp && ${SoongZipCmd} -o ${out} -C $$OUT_DIR -l ${out}.tmp",
+			Command:        "${SoongZipCmd} -o ${out} -C $$OUT_DIR -r ${out}.rsp",
 			CommandDeps:    []string{"${SoongZipCmd}"},
-			Rspfile:        "$out.rsp",
+			Rspfile:        "${out}.rsp",
 			RspfileContent: "$in",
 		})
 
@@ -605,8 +614,13 @@ func transformSourceToObj(ctx android.ModuleContext, subdir string, srcFiles and
 			tidyFile := android.ObjPathWithExt(ctx, subdir, srcFile, "tidy")
 			tidyFiles = append(tidyFiles, tidyFile)
 
+			rule := clangTidy
+			if ctx.Config().IsEnvTrue("RBE_CLANG_TIDY") {
+				rule = clangTidyRE
+			}
+
 			ctx.Build(pctx, android.BuildParams{
-				Rule:        clangTidy,
+				Rule:        rule,
 				Description: "clang-tidy " + srcFile.Rel(),
 				Output:      tidyFile,
 				Input:       srcFile,
