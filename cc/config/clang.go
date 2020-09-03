@@ -210,6 +210,8 @@ func init() {
 		"-Wno-suggest-override",
 		"-Wno-suggest-destructor-override",
 		"-Wno-void-pointer-to-enum-cast",
+		// Added for r404163
+		"-Wno-compound-token-split-by-space",
 	}, " "))
 
 	// Extra cflags for projects under external/ directory to disable warnings that are infeasible
