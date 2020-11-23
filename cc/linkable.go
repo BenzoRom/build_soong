@@ -6,6 +6,7 @@ import (
 	"android/soong/android"
 )
 
+// LinkableInterface is an interface for a type of module that is linkable in a C++ library.
 type LinkableInterface interface {
 	Module() android.Module
 	CcLibrary() bool

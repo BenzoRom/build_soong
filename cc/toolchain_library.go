@@ -96,7 +96,7 @@ func (library *toolchainLibraryDecorator) link(ctx ModuleContext,
 	if library.Properties.Repack_objects_to_keep != nil {
 		fileName := ctx.ModuleName() + staticLibraryExtension
 		outputFile := android.PathForModuleOut(ctx, fileName)
-		TransformArchiveRepack(ctx, srcPath, outputFile, library.Properties.Repack_objects_to_keep)
+		transformArchiveRepack(ctx, srcPath, outputFile, library.Properties.Repack_objects_to_keep)
 
 		return outputFile
 	}
