@@ -207,6 +207,8 @@ func init() {
 		"-Wno-void-pointer-to-enum-cast",
 		// Added for r404163
 		"-Wno-compound-token-split-by-space",
+		// New warnings to be fixed after clang-r407598
+		"-Wno-string-concatenation", // http://b/175068488
 	}, " "))
 
 	// Extra cflags for external third-party projects to disable warnings that
