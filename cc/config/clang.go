@@ -147,8 +147,9 @@ func init() {
 		// Warnings from clang-10
 		// Nested and array designated initialization is nice to have.
 		"-Wno-c99-designator",
-		"-Wno-error=reorder-init-list",
-		"-Wno-error=implicit-int-float-conversion",
+
+		"-Wno-unknown-warning-option",
+		"-Wno-gnu-folding-constant",
 	}, " "))
 
 	pctx.StaticVariable("ClangExtraCppflags", strings.Join([]string{
@@ -198,13 +199,8 @@ func init() {
 		"-Wno-enum-enum-conversion",                 // http://b/154138986
 		"-Wno-enum-float-conversion",                // http://b/154255917
 		"-Wno-pessimizing-move",                     // http://b/154270751
-		// Added for r385598
-		"-Wno-deprecated-copy",
-		"-Wno-misleading-indentation",
-		"-Wno-non-c-typedef-for-linkage",
-		"-Wno-range-loop-construct",
-		"-Wno-zero-as-null-pointer-constant",
-		"-Wno-error=void-pointer-to-int-cast",
+		// New warnings to be fixed after clang-r399163
+		"-Wno-non-c-typedef-for-linkage", // http://b/161304145
 		// Added for r399872 (12.0.0)
 		"-Wno-suggest-override",
 		"-Wno-suggest-destructor-override",
