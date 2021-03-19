@@ -18,7 +18,6 @@
 # Inputs:
 #  Environment:
 #   CLANG_BIN: path to the clang bin directory
-#   CROSS_COMPILE: prefix added to readelf, objcopy tools
 #   XZ: path to the xz binary
 #  Arguments:
 #   -i ${file}: input file (required)
@@ -81,10 +80,8 @@ do_strip_keep_mini_debug_info() {
         "${CLANG_BIN}/llvm-nm" "${infile}" --format=posix --defined-only | awk '{ if ($2 == "T" || $2 == "t" || $2 == "D") print $1 }' | sort > "${outfile}.funcsyms"
         comm -13 "${outfile}.dynsyms" "${outfile}.funcsyms" > "${outfile}.keep_symbols"
         echo >> "${outfile}.keep_symbols" # Ensure that the keep_symbols file is not empty.
-        "${CLANG_BIN}/llvm-objcopy" --rename-section .debug_frame=saved_debug_frame "${outfile}.debug" "${outfile}.mini_debuginfo"
-        "${CLANG_BIN}/llvm-objcopy" -S --remove-section .gdb_index --remove-section .comment --keep-symbols="${outfile}.keep_symbols" "${outfile}.mini_debuginfo"
-        "${CLANG_BIN}/llvm-objcopy" --rename-section saved_debug_frame=.debug_frame "${outfile}.mini_debuginfo"
-        "${XZ}" "${outfile}.mini_debuginfo"
+        "${CLANG_BIN}/llvm-objcopy" -S --keep-section .debug_frame --keep-symbols="${outfile}.keep_symbols" "${outfile}.debug" "${outfile}.mini_debuginfo"
+        "${XZ}" --keep --block-size=64k --threads=0 "${outfile}.mini_debuginfo"
 
         "${CLANG_BIN}/llvm-objcopy" --add-section .gnu_debugdata="${outfile}.mini_debuginfo.xz" "${outfile}.tmp"
         rm -f "${outfile}.dynsyms" "${outfile}.funcsyms" "${outfile}.keep_symbols" "${outfile}.debug" "${outfile}.mini_debuginfo" "${outfile}.mini_debuginfo.xz"
