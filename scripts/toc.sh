@@ -45,8 +45,8 @@ EOF
 }
 
 do_macho() {
-    "${CLANG_BIN}/llvm-objdump" -x "${infile}" | grep LC_ID_DYLIB -A 5 > "${outfile}.tmp"
-    "${CLANG_BIN}/llvm-nm" --extern-only --format=posix "${infile}" | cut -f1-2 -d" " | (grep -v 'U$' >> "${outfile}.tmp" || true)
+    "${CLANG_BIN}/llvm-objdump" -p "${infile}" | grep LC_ID_DYLIB -A 5 > "${outfile}.tmp"
+    "${CLANG_BIN}/llvm-nm" -gP "${infile}" | cut -f1-2 -d" " | (grep -v 'U$' >> "${outfile}.tmp" || true)
 
     cat <<EOF > "${depsfile}"
 ${outfile}: \\
@@ -57,7 +57,7 @@ EOF
 
 do_pe() {
     "${CLANG_BIN}/llvm-objdump" -x "${infile}" | grep "^Name" | cut -f3 -d" " > "${outfile}.tmp"
-    "${CLANG_BIN}/llvm-nm" --extern-only --format=posix "${infile}" | cut -f1-2 -d" " >> "${outfile}.tmp"
+    "${CLANG_BIN}/llvm-nm" -gP "${infile}" | cut -f1-2 -d" " >> "${outfile}.tmp"
 
     cat <<EOF > "${depsfile}"
 ${outfile}: \\
