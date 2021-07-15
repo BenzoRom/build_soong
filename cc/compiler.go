@@ -92,7 +92,7 @@ type BaseCompilerProperties struct {
 
 	// list of generated headers to add to the include path. These are the names
 	// of genrule modules.
-	Generated_headers []string `android:"arch_variant"`
+	Generated_headers []string `android:"arch_variant,variant_prepend"`
 
 	// pass -frtti instead of -fno-rtti
 	Rtti *bool
@@ -392,7 +392,7 @@ func (compiler *baseCompiler) compilerFlags(ctx ModuleContext, flags Flags, deps
 	if flags.RequiredInstructionSet != "" {
 		instructionSet = flags.RequiredInstructionSet
 	}
-	instructionSetFlags, err := tc.ClangInstructionSetFlags(instructionSet)
+	instructionSetFlags, err := tc.InstructionSetFlags(instructionSet)
 	if err != nil {
 		ctx.ModuleErrorf("%s", err)
 	}
@@ -435,10 +435,10 @@ func (compiler *baseCompiler) compilerFlags(ctx ModuleContext, flags Flags, deps
 	flags.Global.ConlyFlags = append([]string{"${config.CommonGlobalConlyflags}"}, flags.Global.ConlyFlags...)
 	flags.Global.CppFlags = append([]string{fmt.Sprintf("${config.%sGlobalCppflags}", hod)}, flags.Global.CppFlags...)
 
-	flags.Global.AsFlags = append(flags.Global.AsFlags, tc.ClangAsflags())
+	flags.Global.AsFlags = append(flags.Global.AsFlags, tc.Asflags())
 	flags.Global.CppFlags = append([]string{"${config.CommonClangGlobalCppflags}"}, flags.Global.CppFlags...)
 	flags.Global.CommonFlags = append(flags.Global.CommonFlags,
-		tc.ClangCflags(),
+		tc.Cflags(),
 		"${config.CommonClangGlobalCflags}",
 		fmt.Sprintf("${config.%sClangGlobalCflags}", hod))
 
@@ -456,11 +456,11 @@ func (compiler *baseCompiler) compilerFlags(ctx ModuleContext, flags Flags, deps
 
 	flags.Global.AsFlags = append(flags.Global.AsFlags, "-D__ASSEMBLY__")
 
-	flags.Global.CppFlags = append(flags.Global.CppFlags, tc.ClangCppflags())
+	flags.Global.CppFlags = append(flags.Global.CppFlags, tc.Cppflags())
 
 	flags.Global.YasmFlags = append(flags.Global.YasmFlags, tc.YasmFlags())
 
-	flags.Global.CommonFlags = append(flags.Global.CommonFlags, tc.ToolchainClangCflags())
+	flags.Global.CommonFlags = append(flags.Global.CommonFlags, tc.ToolchainCflags())
 
 	cStd := config.CStdVersion
 	if String(compiler.Properties.C_std) == "experimental" {

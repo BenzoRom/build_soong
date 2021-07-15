@@ -36,7 +36,6 @@ var (
 
 		// Make paths in deps files relative
 		"-no-canonical-prefixes",
-		"-fno-canonical-system-headers",
 
 		"-DNDEBUG",
 		"-UDEBUG",
@@ -60,8 +59,6 @@ var (
 	commonGlobalConlyflags = []string{}
 
 	deviceGlobalCflags = []string{
-		"-fdiagnostics-color",
-
 		"-ffunction-sections",
 		"-fdata-sections",
 		"-fno-short-enums",
@@ -77,6 +74,7 @@ var (
 		"-Werror=address",
 		"-Werror=sequence-point",
 		"-Werror=format-security",
+		"-nostdlibinc",
 	}
 
 	deviceGlobalCppflags = []string{
@@ -99,7 +97,7 @@ var (
 		"-Wl,--icf=safe",
 	}
 
-	deviceGlobalLldflags = append(ClangFilterUnknownLldflags(deviceGlobalLdflags),
+	deviceGlobalLldflags = append(deviceGlobalLdflags,
 		[]string{
 			"-fuse-ld=lld",
 		}...)
@@ -114,6 +112,15 @@ var (
 
 	commonGlobalCppflags = []string{
 		"-Wsign-promo",
+
+		// -Wimplicit-fallthrough is not enabled by -Wall.
+		"-Wimplicit-fallthrough",
+
+		// Enable clang's thread-safety annotations in libcxx.
+		"-D_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS",
+
+		// libc++'s math.h has an #include_next outside of system_headers.
+		"-Wno-gnu-include-next",
 	}
 
 	noOverrideGlobalCflags = []string{
@@ -122,7 +129,6 @@ var (
 		"-Werror=int-in-bool-context",
 		"-Werror=int-to-pointer-cast",
 		"-Werror=pointer-to-int-cast",
-		"-Werror=string-compare",
 		"-Werror=xor-used-as-pow",
 		// http://b/161386391 for -Wno-void-pointer-to-enum-cast
 		"-Wno-void-pointer-to-enum-cast",
@@ -131,11 +137,96 @@ var (
 		// http://b/161386391 for -Wno-pointer-to-int-cast
 		"-Wno-pointer-to-int-cast",
 		"-Werror=fortify-source",
+
+		"-Werror=address-of-temporary",
+		// Bug: http://b/29823425 Disable -Wnull-dereference until the
+		// new cases detected by this warning in Clang r271374 are
+		// fixed.
+		//"-Werror=null-dereference",
+		"-Werror=return-type",
+
 		// New warnings to be fixed after clang-r433403
 		"-Wno-error=unused-but-set-variable",  // http://b/197240255
 		"-Wno-error=unused-but-set-parameter", // http://b/197240255
 		"-Wno-unused-but-set-variable",  // http://b/197240255
 		"-Wno-unused-but-set-parameter", // http://b/197240255
+
+		// http://b/72331526 Disable -Wtautological-* until the instances detected by these
+		// new warnings are fixed.
+		"-Wno-tautological-constant-compare",
+		"-Wno-tautological-type-limit-compare",
+		// http://b/145210666
+		"-Wno-reorder-init-list",
+		// http://b/145211066
+		"-Wno-implicit-int-float-conversion",
+		// New warnings to be fixed after clang-r377782.
+		"-Wno-int-in-bool-context",          // http://b/148287349
+		"-Wno-sizeof-array-div",             // http://b/148815709
+		"-Wno-tautological-overlap-compare", // http://b/148815696
+		// New warnings to be fixed after clang-r383902.
+		"-Wno-deprecated-copy",                      // http://b/153746672
+		"-Wno-range-loop-construct",                 // http://b/153747076
+		"-Wno-misleading-indentation",               // http://b/153746954
+		"-Wno-zero-as-null-pointer-constant",        // http://b/68236239
+		"-Wno-deprecated-anon-enum-enum-conversion", // http://b/153746485
+		"-Wno-deprecated-enum-enum-conversion",      // http://b/153746563
+		"-Wno-string-compare",                       // http://b/153764102
+		"-Wno-enum-enum-conversion",                 // http://b/154138986
+		"-Wno-enum-float-conversion",                // http://b/154255917
+		"-Wno-pessimizing-move",                     // http://b/154270751
+		// New warnings to be fixed after clang-r399163
+		"-Wno-non-c-typedef-for-linkage", // http://b/161304145
+		// New warnings to be fixed after clang-r407598
+		"-Wno-string-concatenation", // http://b/175068488
+
+		// New warnings to be fixed after clang-r428724
+		"-Wno-align-mismatch", // http://b/193679946
+		// New warnings to be fixed after clang-r433403
+		"-Wno-error=unused-but-set-variable",  // http://b/197240255
+		"-Wno-unused-but-set-variable",
+		"-Wno-error=unused-but-set-parameter", // http://b/197240255
+		"-Wno-unused-but-set-parameter",
+		// New warnings to be fixed after clang-r458507
+		"-Wno-error=unqualified-std-cast-call", // http://b/239662094
+		"-Wno-macro-redefined",
+
+                // Clang 14.0
+                "-Wno-bitwise-instead-of-logical",
+                // Clang-15
+		"-Wno-deprecated",
+                "-Wno-deprecated-non-prototype",
+                "-Wno-unqualified-std-cast-call",
+                // Clang-16
+		"-Wno-deprecated-builtins",
+		"-Wno-array-parameter",
+	}
+
+	// Extra cflags for external third-party projects to disable warnings that
+	// are infeasible to fix in all the external projects and their upstream repos.
+	extraExternalCflags = []string{
+		"-Wno-enum-compare",
+		"-Wno-enum-compare-switch",
+
+		// http://b/72331524 Allow null pointer arithmetic until the instances detected by
+		// this new warning are fixed.
+		"-Wno-null-pointer-arithmetic",
+
+		// Bug: http://b/29823425 Disable -Wnull-dereference until the
+		// new instances detected by this warning are fixed.
+		"-Wno-null-dereference",
+
+		// http://b/145211477
+		"-Wno-pointer-compare",
+		// http://b/145211022
+		"-Wno-xor-used-as-pow",
+		// http://b/145211022
+		"-Wno-final-dtor-non-final-class",
+
+		// http://b/165945989
+		"-Wno-psabi",
+
+		// http://b/199369603
+		"-Wno-null-pointer-subtraction",
 	}
 
 	IllegalFlags = []string{
@@ -169,28 +260,28 @@ func init() {
 		commonGlobalCflags = append(commonGlobalCflags, "-fdebug-prefix-map=/proc/self/cwd=")
 	}
 
-	staticVariableExportedToBazel("CommonGlobalConlyflags", commonGlobalConlyflags)
-	staticVariableExportedToBazel("DeviceGlobalCppflags", deviceGlobalCppflags)
-	staticVariableExportedToBazel("DeviceGlobalLdflags", deviceGlobalLdflags)
-	staticVariableExportedToBazel("DeviceGlobalLldflags", deviceGlobalLldflags)
-	staticVariableExportedToBazel("HostGlobalCppflags", hostGlobalCppflags)
-	staticVariableExportedToBazel("HostGlobalLdflags", hostGlobalLdflags)
-	staticVariableExportedToBazel("HostGlobalLldflags", hostGlobalLldflags)
+	exportStringListStaticVariable("CommonGlobalConlyflags", commonGlobalConlyflags)
+	exportStringListStaticVariable("DeviceGlobalCppflags", deviceGlobalCppflags)
+	exportStringListStaticVariable("DeviceGlobalLdflags", deviceGlobalLdflags)
+	exportStringListStaticVariable("DeviceGlobalLldflags", deviceGlobalLldflags)
+	exportStringListStaticVariable("HostGlobalCppflags", hostGlobalCppflags)
+	exportStringListStaticVariable("HostGlobalLdflags", hostGlobalLdflags)
+	exportStringListStaticVariable("HostGlobalLldflags", hostGlobalLldflags)
 
 	// Export the static default CommonClangGlobalCflags to Bazel.
 	// TODO(187086342): handle cflags that are set in VariableFuncs.
 	commonClangGlobalCFlags := append(
-		ClangFilterUnknownCflags(commonGlobalCflags),
+		commonGlobalCflags,
 		[]string{
 			"${ClangExtraCflags}",
 			// Default to zero initialization.
 			"-ftrivial-auto-var-init=zero",
 			"-enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang",
 		}...)
-	exportedVars.Set("CommonClangGlobalCflags", variableValue(commonClangGlobalCFlags))
+	exportedStringListVars.Set("CommonClangGlobalCflags", commonClangGlobalCFlags)
 
 	pctx.VariableFunc("CommonClangGlobalCflags", func(ctx android.PackageVarContext) string {
-		flags := ClangFilterUnknownCflags(commonGlobalCflags)
+		flags := commonGlobalCflags
 		flags = append(flags, "${ClangExtraCflags}")
 
 		// http://b/131390872
@@ -211,36 +302,32 @@ func init() {
 
 	// Export the static default DeviceClangGlobalCflags to Bazel.
 	// TODO(187086342): handle cflags that are set in VariableFuncs.
-	deviceClangGlobalCflags := append(ClangFilterUnknownCflags(deviceGlobalCflags), "${ClangExtraTargetCflags}")
-	exportedVars.Set("DeviceClangGlobalCflags", variableValue(deviceClangGlobalCflags))
+	exportedStringListVars.Set("DeviceClangGlobalCflags", deviceGlobalCflags)
 
 	pctx.VariableFunc("DeviceClangGlobalCflags", func(ctx android.PackageVarContext) string {
-		if ctx.Config().Fuchsia() {
-			return strings.Join(ClangFilterUnknownCflags(deviceGlobalCflags), " ")
-		} else {
-			return strings.Join(deviceClangGlobalCflags, " ")
-		}
+		return strings.Join(deviceGlobalCflags, " ")
 	})
 
-	staticVariableExportedToBazel("HostClangGlobalCflags", ClangFilterUnknownCflags(hostGlobalCflags))
-	staticVariableExportedToBazel("NoOverrideClangGlobalCflags", append(ClangFilterUnknownCflags(noOverrideGlobalCflags), "${ClangExtraNoOverrideCflags}"))
-	staticVariableExportedToBazel("CommonClangGlobalCppflags", append(ClangFilterUnknownCflags(commonGlobalCppflags), "${ClangExtraCppflags}"))
-	staticVariableExportedToBazel("ClangExternalCflags", []string{"${ClangExtraExternalCflags}"})
+	exportStringListStaticVariable("HostClangGlobalCflags", hostGlobalCflags)
+	exportStringListStaticVariable("NoOverrideClangGlobalCflags", noOverrideGlobalCflags)
+	exportStringListStaticVariable("CommonClangGlobalCppflags", commonGlobalCppflags)
+	exportStringListStaticVariable("ClangExternalCflags", extraExternalCflags)
 
 	// Everything in these lists is a crime against abstraction and dependency tracking.
 	// Do not add anything to this list.
-	pctx.PrefixedExistentPathsForSourcesVariable("CommonGlobalIncludes", "-I",
-		[]string{
-			"system/core/include",
-			"system/logging/liblog/include",
-			"system/media/audio/include",
-			"hardware/libhardware/include",
-			"hardware/libhardware_legacy/include",
-			"hardware/ril/include",
-			"frameworks/native/include",
-			"frameworks/native/opengl/include",
-			"frameworks/av/include",
-		})
+	commonGlobalIncludes := []string{
+		"system/core/include",
+		"system/logging/liblog/include",
+		"system/media/audio/include",
+		"hardware/libhardware/include",
+		"hardware/libhardware_legacy/include",
+		"hardware/ril/include",
+		"frameworks/native/include",
+		"frameworks/native/opengl/include",
+		"frameworks/av/include",
+	}
+	exportedStringListVars.Set("CommonGlobalIncludes", commonGlobalIncludes)
+	pctx.PrefixedExistentPathsForSourcesVariable("CommonGlobalIncludes", "-I", commonGlobalIncludes)
 
 	pctx.SourcePathVariable("ClangDefaultBase", ClangDefaultBase)
 	pctx.VariableFunc("ClangBase", func(ctx android.PackageVarContext) string {
