@@ -1212,7 +1212,7 @@ func (j *Module) compile(ctx android.ModuleContext, aaptSrcJar android.Path) {
 			}
 			// Dex compilation
 			var dexOutputFile android.OutputPath
-			dexOutputFile = j.dexer.compileDex(ctx, flags, j.MinSdkVersion(ctx), outputFile, jarName)
+			dexOutputFile = j.dexer.compileDex(ctx, flags, j.MinSdkVersion(ctx), implementationAndResourcesJar, jarName)
 			if ctx.Failed() {
 				return
 			}
