@@ -32,6 +32,9 @@ type DexProperties struct {
 	// list of module-specific flags that will be used for dex compiles
 	Dxflags []string `android:"arch_variant"`
 
+	// A list of files containing rules that specify the classes to keep in the main dex file.
+	Main_dex_rules []string `android:"path"`
+
 	Optimize struct {
 		// If false, disable all optimization.  Defaults to true for android_app and android_test
 		// modules, false for java_library and java_test modules.
@@ -69,6 +72,9 @@ type DexProperties struct {
 	// This defaults to reasonable value based on module and should not be set.
 	// It exists only to support ART tests.
 	Uncompress_dex *bool
+
+	// Exclude kotlinc generate files: *.kotlin_module, *.kotlin_builtins. Defaults to false.
+	Exclude_kotlinc_generated_files *bool
 }
 
 type dexer struct {
@@ -91,7 +97,7 @@ var d8, d8RE = pctx.MultiCommandRemoteStaticRules("d8",
 			`${config.Zip2ZipCmd} -i $in -o $tmpJar -x '**/*.dex' && ` +
 			`$d8Template${config.D8Cmd} ${config.DexFlags} --output $outDir $d8Flags $tmpJar && ` +
 			`$zipTemplate${config.SoongZipCmd} $zipFlags -o $outDir/classes.dex.jar -C $outDir -f "$outDir/classes*.dex" && ` +
-			`${config.MergeZipsCmd} -D -stripFile "**/*.class" $out $outDir/classes.dex.jar $in`,
+			`${config.MergeZipsCmd} -D -stripFile "**/*.class" $mergeZipsFlags $out $outDir/classes.dex.jar $in`,
 		CommandDeps: []string{
 			"${config.D8Cmd}",
 			"${config.Zip2ZipCmd}",
@@ -113,7 +119,7 @@ var d8, d8RE = pctx.MultiCommandRemoteStaticRules("d8",
 			ExecStrategy: "${config.RED8ExecStrategy}",
 			Platform:     map[string]string{remoteexec.PoolKey: "${config.REJavaPool}"},
 		},
-	}, []string{"outDir", "d8Flags", "zipFlags", "tmpJar"}, nil)
+	}, []string{"outDir", "d8Flags", "zipFlags", "tmpJar", "mergeZipsFlags"}, nil)
 
 var r8, r8RE = pctx.MultiCommandRemoteStaticRules("r8",
 	blueprint.RuleParams{
@@ -131,7 +137,7 @@ var r8, r8RE = pctx.MultiCommandRemoteStaticRules("r8",
 			`${config.SoongZipCmd} -o ${outUsageZip} -C ${outUsageDir} -f ${outUsage} && ` +
 			`rm -rf ${outUsageDir} && ` +
 			`$zipTemplate${config.SoongZipCmd} $zipFlags -o $outDir/classes.dex.jar -C $outDir -f "$outDir/classes*.dex" && ` +
-			`${config.MergeZipsCmd} -D -stripFile "**/*.class" $out $outDir/classes.dex.jar $in`,
+			`${config.MergeZipsCmd} -D -stripFile "**/*.class" $mergeZipsFlags $out $outDir/classes.dex.jar $in`,
 		CommandDeps: []string{
 			"${config.R8Cmd}",
 			"${config.Zip2ZipCmd}",
@@ -162,14 +168,21 @@ var r8, r8RE = pctx.MultiCommandRemoteStaticRules("r8",
 			Platform:     map[string]string{remoteexec.PoolKey: "${config.REJavaPool}"},
 		},
 	}, []string{"outDir", "outDict", "outUsage", "outUsageZip", "outUsageDir",
-		"r8Flags", "zipFlags", "tmpJar"}, []string{"implicits"})
+		"r8Flags", "zipFlags", "tmpJar", "mergeZipsFlags"}, []string{"implicits"})
 
-func (d *dexer) dexCommonFlags(ctx android.ModuleContext, minSdkVersion android.SdkSpec) []string {
-	flags := d.dexProperties.Dxflags
+func (d *dexer) dexCommonFlags(ctx android.ModuleContext,
+	minSdkVersion android.SdkSpec) (flags []string, deps android.Paths) {
+
+	flags = d.dexProperties.Dxflags
 	// Translate all the DX flags to D8 ones until all the build files have been migrated
 	// to D8 flags. See: b/69377755
 	flags = android.RemoveListFromList(flags,
 		[]string{"--core-library", "--dex", "--multi-dex"})
+
+	for _, f := range android.PathsForModuleSrc(ctx, d.dexProperties.Main_dex_rules) {
+		flags = append(flags, "--main-dex-rules", f.String())
+		deps = append(deps, f)
+	}
 
 	if ctx.Config().Getenv("NO_OPTIMIZE_DX") != "" {
 		flags = append(flags, "--debug")
@@ -187,7 +200,7 @@ func (d *dexer) dexCommonFlags(ctx android.ModuleContext, minSdkVersion android.
 	}
 
 	flags = append(flags, "--min-api "+strconv.Itoa(effectiveVersion.FinalOrFutureInt()))
-	return flags
+	return flags, deps
 }
 
 func d8Flags(flags javaBuilderFlags) (d8Flags []string, d8Deps android.Paths) {
@@ -244,6 +257,15 @@ func (d *dexer) r8Flags(ctx android.ModuleContext, flags javaBuilderFlags) (r8Fl
 
 	if BoolDefault(opt.Proguard_compatibility, true) {
 		r8Flags = append(r8Flags, "--force-proguard-compatibility")
+	} else {
+		// TODO(b/213833843): Allow configuration of the prefix via a build variable.
+		var sourceFilePrefix = "go/retraceme "
+		var sourceFileTemplate = "\"" + sourceFilePrefix + "%MAP_ID\""
+		// TODO(b/200967150): Also tag the source file in compat builds.
+		if Bool(opt.Optimize) || Bool(opt.Obfuscate) {
+			r8Flags = append(r8Flags, "--map-id-template", "%MAP_HASH")
+			r8Flags = append(r8Flags, "--source-file-template", sourceFileTemplate)
+		}
 	}
 
 	// TODO(ccross): Don't shrink app instrumentation tests by default.
@@ -286,7 +308,13 @@ func (d *dexer) compileDex(ctx android.ModuleContext, flags javaBuilderFlags, mi
 		zipFlags += " -L 0"
 	}
 
-	commonFlags := d.dexCommonFlags(ctx, minSdkVersion)
+	commonFlags, commonDeps := d.dexCommonFlags(ctx, minSdkVersion)
+
+	// Exclude kotlinc generated files when "exclude_kotlinc_generated_files" is set to true.
+	mergeZipsFlags := ""
+	if proptools.BoolDefault(d.dexProperties.Exclude_kotlinc_generated_files, false) {
+		mergeZipsFlags = "-stripFile META-INF/*.kotlin_module -stripFile **/*.kotlin_builtins"
+	}
 
 	useR8 := d.effectiveOptimizeEnabled()
 	if useR8 {
@@ -298,16 +326,18 @@ func (d *dexer) compileDex(ctx android.ModuleContext, flags javaBuilderFlags, mi
 		proguardUsageZip := android.PathForModuleOut(ctx, "proguard_usage.zip")
 		d.proguardUsageZip = android.OptionalPathForPath(proguardUsageZip)
 		r8Flags, r8Deps := d.r8Flags(ctx, flags)
+		r8Deps = append(r8Deps, commonDeps...)
 		rule := r8
 		args := map[string]string{
-			"r8Flags":     strings.Join(append(commonFlags, r8Flags...), " "),
-			"zipFlags":    zipFlags,
-			"outDict":     proguardDictionary.String(),
-			"outUsageDir": proguardUsageDir.String(),
-			"outUsage":    proguardUsage.String(),
-			"outUsageZip": proguardUsageZip.String(),
-			"outDir":      outDir.String(),
-			"tmpJar":      tmpJar.String(),
+			"r8Flags":        strings.Join(append(commonFlags, r8Flags...), " "),
+			"zipFlags":       zipFlags,
+			"outDict":        proguardDictionary.String(),
+			"outUsageDir":    proguardUsageDir.String(),
+			"outUsage":       proguardUsage.String(),
+			"outUsageZip":    proguardUsageZip.String(),
+			"outDir":         outDir.String(),
+			"tmpJar":         tmpJar.String(),
+			"mergeZipsFlags": mergeZipsFlags,
 		}
 		if ctx.Config().UseRBE() && ctx.Config().IsEnvTrue("RBE_R8") {
 			rule = r8RE
@@ -324,6 +354,7 @@ func (d *dexer) compileDex(ctx android.ModuleContext, flags javaBuilderFlags, mi
 		})
 	} else {
 		d8Flags, d8Deps := d8Flags(flags)
+		d8Deps = append(d8Deps, commonDeps...)
 		rule := d8
 		if ctx.Config().UseRBE() && ctx.Config().IsEnvTrue("RBE_D8") {
 			rule = d8RE
@@ -335,10 +366,11 @@ func (d *dexer) compileDex(ctx android.ModuleContext, flags javaBuilderFlags, mi
 			Input:       classesJar,
 			Implicits:   d8Deps,
 			Args: map[string]string{
-				"d8Flags":  strings.Join(append(commonFlags, d8Flags...), " "),
-				"zipFlags": zipFlags,
-				"outDir":   outDir.String(),
-				"tmpJar":   tmpJar.String(),
+				"d8Flags":        strings.Join(append(commonFlags, d8Flags...), " "),
+				"zipFlags":       zipFlags,
+				"outDir":         outDir.String(),
+				"tmpJar":         tmpJar.String(),
+				"mergeZipsFlags": mergeZipsFlags,
 			},
 		})
 	}
