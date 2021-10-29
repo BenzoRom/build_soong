@@ -30,23 +30,15 @@ var ClangUnknownCflags = sorted([]string{
 	"-fno-tree-sra",
 	"-fprefetch-loop-arrays",
 	"-funswitch-loops",
-	"-Werror=unused-but-set-parameter",
-	"-Werror=unused-but-set-variable",
 	"-Wmaybe-uninitialized",
 	"-Wno-error=clobbered",
 	"-Wno-error=maybe-uninitialized",
-	"-Wno-error=unused-but-set-parameter",
-	"-Wno-error=unused-but-set-variable",
 	"-Wno-extended-offsetof",
 	"-Wno-free-nonheap-object",
 	"-Wno-literal-suffix",
 	"-Wno-maybe-uninitialized",
 	"-Wno-old-style-declaration",
-	"-Wno-unused-but-set-parameter",
-	"-Wno-unused-but-set-variable",
 	"-Wno-unused-local-typedefs",
-	"-Wunused-but-set-parameter",
-	"-Wunused-but-set-variable",
 	"-fdiagnostics-color",
 	// http://b/153759688
 	"-fuse-init-array",
@@ -93,8 +85,22 @@ var ClangLibToolingUnknownCflags = sorted([]string{})
 // become more strict, or if they are a new match for a wildcard group like
 // `modernize-*`.
 var ClangTidyDisableChecks = []string{
-	"misc-no-recursion",
-	"readability-function-cognitive-complexity", // http://b/175055536
+       "bugprone-easily-swappable-parameters", // clang-13
+       "bugprone-implicit-widening-of-multiplication-result", // clang-13
+       "bugprone-unhandled-self-assignment", // clang-13
+       "cert-oop54-cpp", // clang-13
+       "google-explicit-constructor", // clang-13
+       "google-global-names-in-headers", // clang-13
+       "misc-no-recursion",
+       "misc-non-private-member-variables-in-classes", // clang-13
+       "modernize-concat-nested-namespaces", // clang-13
+       "modernize-pass-by-value", // clang-13
+       "modernize-replace-disallow-copy-and-assign-macro", // clang-13
+       "modernize-return-braced-init-list", // clang-13
+       "modernize-use-equals-default", // clang-13
+       "modernize-use-nodiscard", // clang-13
+       "modernize-use-override", // clang-13
+       "readability-*", // clang-13
 }
 
 func init() {
@@ -201,6 +207,14 @@ func init() {
 		"-Wno-non-c-typedef-for-linkage", // http://b/161304145
 		// New warnings to be fixed after clang-r407598
 		"-Wno-string-concatenation", // http://b/175068488
+		// New warnings to be fixed after clang-r428724
+		"-Wno-align-mismatch", // http://b/193679946
+		// New warnings to be fixed after clang-r433403
+		"-Wno-error=unused-but-set-variable",  // http://b/197240255
+		"-Wno-error=unused-but-set-parameter", // http://b/197240255
+
+                // Clang 14.0
+                "-Wno-bitwise-instead-of-logical",
 	})
 
 	// Extra cflags for external third-party projects to disable warnings that
@@ -226,6 +240,9 @@ func init() {
 
 		// http://b/165945989
 		"-Wno-psabi",
+
+		// http://b/199369603
+		"-Wno-null-pointer-subtraction",
 	})
 }
 

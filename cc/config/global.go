@@ -132,6 +132,11 @@ var (
 		// http://b/161386391 for -Wno-pointer-to-int-cast
 		"-Wno-pointer-to-int-cast",
 		"-Werror=fortify-source",
+		// New warnings to be fixed after clang-r433403
+		"-Wno-error=unused-but-set-variable",  // http://b/197240255
+		"-Wno-error=unused-but-set-parameter", // http://b/197240255
+		"-Wno-unused-but-set-variable",  // http://b/197240255
+		"-Wno-unused-but-set-parameter", // http://b/197240255
 	}
 
 	IllegalFlags = []string{
@@ -145,8 +150,8 @@ var (
 
 	// prebuilts/clang default settings.
 	ClangDefaultBase         = "prebuilts/clang/host"
-	ClangDefaultVersion      = "clang-r416183b1"
-	ClangDefaultShortVersion = "12.0.7"
+	ClangDefaultVersion      = "clang-benzo"
+	ClangDefaultShortVersion = "14.0.0"
 
 	// Directories with warnings from Android.bp files.
 	WarningAllowedProjects = []string{
