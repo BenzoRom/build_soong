@@ -29,9 +29,9 @@ import (
 func NewStatusOutput(w io.Writer, statusFormat string, forceSimpleOutput, quietBuild bool) status.StatusOutput {
 	formatter := newFormatter(statusFormat, quietBuild)
 
-	if !forceSimpleOutput && isSmartTerminal(w) {
-		return NewSmartStatusOutput(w, formatter)
+	if forceSimpleOutput || quietBuild || !isSmartTerminal(w) {
+		return NewSimpleStatusOutput(w, formatter, quietBuild)
 	} else {
-		return NewSimpleStatusOutput(w, formatter)
+		return NewSmartStatusOutput(w, formatter)
 	}
 }
