@@ -226,7 +226,6 @@ func makeVarsToolchain(ctx android.MakeVarsContext, secondPrefix string,
 	}
 
 	clangPrefix := secondPrefix + "CLANG_" + typePrefix
-	clangExtras := "-B" + config.ToolPath(toolchain)
 
 	ctx.Strict(clangPrefix+"TRIPLE", toolchain.ClangTriple())
 	ctx.Strict(clangPrefix+"GLOBAL_CFLAGS", strings.Join([]string{
@@ -234,7 +233,6 @@ func makeVarsToolchain(ctx android.MakeVarsContext, secondPrefix string,
 		"${config.CommonClangGlobalCflags}",
 		fmt.Sprintf("${config.%sClangGlobalCflags}", hod),
 		toolchain.ToolchainClangCflags(),
-		clangExtras,
 		productExtraCflags,
 	}, " "))
 	ctx.Strict(clangPrefix+"GLOBAL_CPPFLAGS", strings.Join([]string{
@@ -247,14 +245,12 @@ func makeVarsToolchain(ctx android.MakeVarsContext, secondPrefix string,
 		toolchain.ClangLdflags(),
 		toolchain.ToolchainClangLdflags(),
 		productExtraLdflags,
-		clangExtras,
 	}, " "))
 	ctx.Strict(clangPrefix+"GLOBAL_LLDFLAGS", strings.Join([]string{
 		fmt.Sprintf("${config.%sGlobalLldflags}", hod),
 		toolchain.ClangLldflags(),
 		toolchain.ToolchainClangLdflags(),
 		productExtraLdflags,
-		clangExtras,
 	}, " "))
 
 	if target.Os.Class == android.Device {

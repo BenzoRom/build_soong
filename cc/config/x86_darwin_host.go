@@ -245,8 +245,12 @@ func (t *toolchainDarwin) Bionic() bool {
 	return false
 }
 
-func (t *toolchainDarwin) ToolPath() string {
-	return "${config.MacToolPath}"
+func (t *toolchainDarwin) ToolchainCflags() string {
+	return "-B${config.MacToolPath}"
+}
+
+func (t *toolchainDarwin) ToolchainLdflags() string {
+	return "-B${config.MacToolPath}"
 }
 
 var toolchainDarwinSingleton Toolchain = &toolchainDarwin{}

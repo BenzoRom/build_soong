@@ -16,7 +16,6 @@ package config
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"android/soong/android"
 )
@@ -77,7 +76,6 @@ type Toolchain interface {
 	GccTriple() string
 	// GccVersion should return a real value, not a ninja reference
 	GccVersion() string
-	ToolPath() string
 
 	IncludeFlags() string
 
@@ -172,10 +170,6 @@ func (toolchainBase) Bionic() bool {
 	return true
 }
 
-func (t toolchainBase) ToolPath() string {
-	return ""
-}
-
 type toolchain64Bit struct {
 	toolchainBase
 }
@@ -255,13 +249,6 @@ func ScudoMinimalRuntimeLibrary(t Toolchain) string {
 
 func LibFuzzerRuntimeLibrary(t Toolchain) string {
 	return LibclangRuntimeLibrary(t, "fuzzer")
-}
-
-func ToolPath(t Toolchain) string {
-	if p := t.ToolPath(); p != "" {
-		return p
-	}
-	return filepath.Join(t.GccRoot(), t.GccTriple(), "bin")
 }
 
 var inList = android.InList
