@@ -74,7 +74,21 @@ func init() {
 	pctx.StaticVariable("ErrorProneHeapSize", "4096M")
 	pctx.StaticVariable("ErrorProneHeapFlags", "-J-Xmx${ErrorProneHeapSize}")
 
-	pctx.StaticVariable("DexFlags", "-JXX:OnError='cat hs_err_pid%p.log' -JXX:CICompilerCount=6 -JXX:+UseDynamicNumberOfGCThreads")
+	// D8 invocations are shorter lived, so we restrict their JIT tiering relative to R8.
+	// Note that the `-JXX` prefix syntax is specific to the R8/D8 invocation wrappers.
+	pctx.StaticVariable("D8Flags", strings.Join([]string{
+		`-JXX:OnError="cat hs_err_pid%p.log"`,
+		"-JXX:CICompilerCount=6",
+		"-JXX:+UseDynamicNumberOfGCThreads",
+		"-JXX:+TieredCompilation",
+		"-JXX:TieredStopAtLevel=1",
+	}, " "))
+
+	pctx.StaticVariable("R8Flags", strings.Join([]string{
+		`-JXX:OnError="cat hs_err_pid%p.log"`,
+		"-JXX:CICompilerCount=6",
+		"-JXX:+UseDynamicNumberOfGCThreads",
+	}, " "))
 
 	pctx.StaticVariable("CommonJdkFlags", strings.Join([]string{
 		`-Xmaxerrs 9999999`,
