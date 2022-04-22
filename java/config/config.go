@@ -77,6 +77,7 @@ func init() {
 	// D8 invocations are shorter lived, so we restrict their JIT tiering relative to R8.
 	// Note that the `-JXX` prefix syntax is specific to the R8/D8 invocation wrappers.
 	pctx.StaticVariable("D8Flags", strings.Join([]string{
+		"-JXmx4096M",
 		`-JXX:OnError="cat hs_err_pid%p.log"`,
 		"-JXX:CICompilerCount=6",
 		"-JXX:+UseDynamicNumberOfGCThreads",
@@ -85,6 +86,7 @@ func init() {
 	}, " "))
 
 	pctx.StaticVariable("R8Flags", strings.Join([]string{
+		"-JXmx4096M",
 		`-JXX:OnError="cat hs_err_pid%p.log"`,
 		"-JXX:CICompilerCount=6",
 		"-JXX:+UseDynamicNumberOfGCThreads",
