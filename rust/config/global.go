@@ -49,6 +49,7 @@ var (
 		"-C overflow-checks=on",
 		// Use v0 mangling to distinguish from C++ symbols
 		"-Z symbol-mangling-version=v0",
+		"--color always",
 	}
 
 	deviceGlobalRustFlags = []string{
