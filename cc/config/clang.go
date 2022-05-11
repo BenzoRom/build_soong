@@ -215,6 +215,9 @@ func init() {
 
                 // Clang 14.0
                 "-Wno-bitwise-instead-of-logical",
+                // Clang-15
+                "-Wno-deprecated-non-prototype",
+                "-Wno-unqualified-std-cast-call",
 	})
 
 	// Extra cflags for external third-party projects to disable warnings that
