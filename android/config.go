@@ -1702,8 +1702,8 @@ func (c *deviceConfig) GenerateAidlNdkPlatformBackend() bool {
 	return c.config.productVariables.GenerateAidlNdkPlatformBackend
 }
 
-func (c *config) ForceMultilibFirstOnDevice() bool {
-	return c.productVariables.ForceMultilibFirstOnDevice
+func (c *config) IgnorePrefer32OnDevice() bool {
+	return c.productVariables.IgnorePrefer32OnDevice
 }
 
 // The ConfiguredJarList struct provides methods for handling a list of (apex, jar) pairs.

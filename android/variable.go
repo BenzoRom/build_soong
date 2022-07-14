@@ -444,7 +444,7 @@ type productVariables struct {
 
 	GenerateAidlNdkPlatformBackend bool `json:",omitempty"`
 
-	ForceMultilibFirstOnDevice bool `json:",omitempty"`
+	IgnorePrefer32OnDevice bool `json:",omitempty"`
 }
 
 func boolPtr(v bool) *bool {
