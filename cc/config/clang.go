@@ -86,11 +86,13 @@ var ClangLibToolingUnknownCflags = sorted([]string{})
 // `modernize-*`.
 var ClangTidyDisableChecks = []string{
        "bugprone-easily-swappable-parameters", // clang-13
+       "bugprone-forwarding-reference-overload", // clang-16
        "bugprone-implicit-widening-of-multiplication-result", // clang-13
        "bugprone-unhandled-self-assignment", // clang-13
        "cert-oop54-cpp", // clang-13
        "google-explicit-constructor", // clang-13
        "google-global-names-in-headers", // clang-13
+       "misc-const-correctness", // clang-16
        "misc-no-recursion",
        "misc-non-private-member-variables-in-classes", // clang-13
        "modernize-concat-nested-namespaces", // clang-13
@@ -147,6 +149,7 @@ func init() {
 		// Warnings from clang-10
 		// Nested and array designated initialization is nice to have.
 		"-Wno-c99-designator",
+		"-Wno-gnu-designator",
 
 		// Warnings from clang-12
 		"-Wno-gnu-folding-constant",
@@ -157,6 +160,8 @@ func init() {
 		// This macro allows the bionic versioning.h to indirectly determine whether the
 		// option -Wunguarded-availability is on or not.
 		"-D__ANDROID_UNAVAILABLE_SYMBOLS_ARE_WEAK__",
+
+		"-ffp-contract=off",
 	})
 
 	staticVariableExportedToBazel("ClangExtraCppflags", []string{
@@ -218,6 +223,9 @@ func init() {
                 // Clang-15
                 "-Wno-deprecated-non-prototype",
                 "-Wno-unqualified-std-cast-call",
+                // Clang-16
+		"-Wno-deprecated-builtins",
+		"-Wno-array-parameter",
 	})
 
 	// Extra cflags for external third-party projects to disable warnings that
