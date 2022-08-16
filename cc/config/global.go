@@ -245,7 +245,7 @@ var (
 		"-Wno-error=unused-but-set-parameter", // http://b/197240255
 		"-Wno-error=unqualified-std-cast-call",
 		"-Wno-unqualified-std-cast-call",
-                // Clang-16 r470170
+		// Clang-16 r470170
 		"-Wno-array-parameter",
 		"-Wno-deprecated",
 		"-Wno-deprecated-builtins",
