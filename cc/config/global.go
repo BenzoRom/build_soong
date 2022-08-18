@@ -113,6 +113,8 @@ var (
 
 		// Turn off FMA which got enabled by default in clang-r445002 (http://b/218805949)
 		"-ffp-contract=off",
+
+		"-Wno-unused-command-line-argument",
 	}
 
 	commonGlobalConlyflags = []string{}
@@ -241,6 +243,15 @@ var (
 		// New warnings to be fixed after clang-r433403
 		"-Wno-error=unused-but-set-variable",  // http://b/197240255
 		"-Wno-error=unused-but-set-parameter", // http://b/197240255
+		"-Wno-error=unqualified-std-cast-call",
+		"-Wno-unqualified-std-cast-call",
+                // Clang-16 r470170
+		"-Wno-array-parameter",
+		"-Wno-deprecated",
+		"-Wno-deprecated-builtins",
+		"-Wno-deprecated-non-prototype",
+		"-Wno-unused-but-set-parameter",
+		"-Wno-unused-but-set-variable",
 	}
 
 	noOverrideExternalGlobalCflags = []string{
@@ -293,8 +304,8 @@ var (
 
 	// prebuilts/clang default settings.
 	ClangDefaultBase         = "prebuilts/clang/host"
-	ClangDefaultVersion      = "clang-r450784d"
-	ClangDefaultShortVersion = "14.0.6"
+	ClangDefaultVersion      = "clang-benzo"
+	ClangDefaultShortVersion = "16.0.0"
 
 	// Directories with warnings from Android.bp files.
 	WarningAllowedProjects = []string{
